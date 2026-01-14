@@ -4,6 +4,8 @@
 
 Life Tracker is a personal productivity application designed to make tracking daily life easy and intuitive. The core differentiator is **natural language input** via voice, processed through a self-hosted LLM, enabling rapid capture of tasks, expenses, workouts, and more.
 
+**Domain:** `life.maverickapplications.com`
+
 ---
 
 ## Core Philosophy
@@ -12,43 +14,244 @@ Life Tracker is a personal productivity application designed to make tracking da
 
 **Solution**: A hybrid approach with a flexible base layer and specialized "smart modules" that inherit from it.
 
+**Modular Design**: Each module is self-contained with its own API routes, UI components, and LLM parsing logic. Adding new modules should be straightforward.
+
 ---
 
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Input Layer                          │
-│      (iPhone Shortcut → iOS STT → Text to Server)       │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                 n8n Orchestration                        │
-│   (Routes parsed intent to appropriate module/action)    │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│              Self-Hosted LLM (gpt-oss-20b)               │
-│                  Intent Classification                   │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                  Life Tracker API                        │
-│              (TypeScript / Node.js)                      │
-├─────────┬─────────┬─────────┬─────────┬────────────────┤
-│  Tasks  │ Finance │ Fitness │Shopping │ Future Modules  │
-└─────────┴─────────┴─────────┴─────────┴────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                     PostgreSQL                           │
-│         (Separate tables per module, Option B)           │
-└─────────────────────────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│              Output/Display Layer                        │
-│      (React + Vite Web App → Web Clip → PWA later)       │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Input Layer                               │
+│   ┌─────────────────┐    ┌─────────────────┐                │
+│   │ iPhone Shortcut │    │  macOS Shortcut │                │
+│   │  (iOS STT)      │    │   (macOS STT)   │                │
+│   └────────┬────────┘    └────────┬────────┘                │
+│            │                      │                          │
+│            └──────────┬───────────┘                          │
+│                       ▼                                      │
+│              HTTPS POST to API                               │
+│         (X-API-Key authentication)                           │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+┌───────────────────────▼─────────────────────────────────────┐
+│                  Life Tracker API                            │
+│               (Fastify / TypeScript)                         │
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │              Intent Router                           │    │
+│  │   Calls LLM → Classifies intent → Routes to module  │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                        │                                     │
+│  ┌─────────┬───────────┼───────────┬─────────┐              │
+│  │  Tasks  │  Finance  │  Fitness  │Shopping │  (modules)   │
+│  └─────────┴───────────┴───────────┴─────────┘              │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+┌───────────────────────▼─────────────────────────────────────┐
+│              Self-Hosted LLM (gpt-oss-20b)                   │
+│                   via Ollama                                 │
+│          Intent Classification + Entity Extraction           │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+┌───────────────────────▼─────────────────────────────────────┐
+│                     PostgreSQL                               │
+│         (Separate tables per module, Option B)               │
+│              Host: localhost (same server)                   │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+┌───────────────────────▼─────────────────────────────────────┐
+│              Output/Display Layer                            │
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │              React + Vite Web App                    │    │
+│  │     • Responsive (mobile + desktop)                  │    │
+│  │     • Web clip → PWA upgrade path                    │    │
+│  │     • Offline queue with IndexedDB                   │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Authentication Strategy
+
+### Overview
+
+Single-user self-hosted application with two auth mechanisms:
+
+| Context | Method | Details |
+|---------|--------|---------|
+| **iOS/macOS Shortcuts** | API Key | Long-lived UUID, sent as `X-API-Key` header |
+| **Web Application** | JWT + Refresh Token | Access token (15min) + Refresh token (7 days) |
+
+### API Key Authentication (Shortcuts)
+
+- UUID generated on first setup, stored in environment
+- Sent in `X-API-Key` header with every request
+- Can be revoked/regenerated from web UI
+- Stored securely in Shortcut variables
+
+### JWT Authentication (Web)
+
+```
+Login (username/password)
+        │
+        ▼
+Server validates credentials (bcrypt, cost factor 12)
+        │
+        ▼
+Returns: { accessToken (15min), refreshToken (7 days) }
+        │
+        ▼
+Tokens stored in httpOnly, Secure, SameSite=Strict cookies
+        │
+        ▼
+API requests include Authorization: Bearer <accessToken>
+        │
+        ▼
+Token expired? → Auto-refresh using refreshToken
+```
+
+### Security Measures
+
+- Rate limiting: 5 failed login attempts → 15-minute lockout
+- Refresh tokens stored in database (can be revoked)
+- Access tokens signed with RS256
+- HTTPS required for all connections
+
+### PoC Simplification
+
+- API key only (single key in environment variable)
+- No JWT complexity until MVP phase
+
+---
+
+## Offline Resilience Strategy
+
+### Problem
+
+Network failures shouldn't lose user input. iOS Shortcuts have limited offline capabilities.
+
+### Solution: Hybrid Queue Strategy
+
+#### iOS/macOS Shortcut Flow
+```
+Voice input captured
+        │
+        ▼
+Shortcut attempts POST to API (3-second timeout)
+        │
+        ├── SUCCESS → Show success notification
+        │
+        └── FAILURE →
+                │
+                ├── Show "Server unavailable" notification
+                │
+                └── Save to iOS Reminders with "[PENDING] " prefix
+                    (User manually processes when online)
+```
+
+#### Web App Flow (MVP)
+```
+User creates/modifies task
+        │
+        ├── ONLINE → POST immediately
+        │
+        └── OFFLINE →
+                │
+                ├── Store in IndexedDB (status: "pending_sync")
+                │
+                ├── Show in UI with sync indicator (⏳)
+                │
+                └── Register for online event
+                        │
+                        ▼
+                When online: Process queue → Update status → Show (✓)
+```
+
+#### PWA Phase (Future)
+- Service worker with Background Sync API
+- Works automatically on Android/Chrome
+- Graceful fallback for iOS (sync on app foreground)
+
+### Data Model
+```prisma
+model PendingAction {
+  id          String   @id @default(uuid())
+  action      String   // "create_task", "complete_task", etc.
+  payload     Json     // The action data
+  status      String   // "pending", "syncing", "failed", "synced"
+  attempts    Int      @default(0)
+  lastError   String?
+  createdAt   DateTime @default(now())
+  syncedAt    DateTime?
+}
+```
+
+---
+
+## Error Feedback Loop: "Teach the System"
+
+### Purpose
+
+When LLM parsing fails or partially succeeds, users can correct errors. Corrections are saved and used to improve future parsing.
+
+### User Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. User says: "Add get milk and bread to groceries"        │
+│                                                              │
+│  2. LLM parses (incorrectly):                               │
+│     { title: "get milk and bread", list: "groceries" }      │
+│     (Should have been two separate tasks)                    │
+│                                                              │
+│  3. Task created with parse_warning flag set                │
+│                                                              │
+│  4. Web UI shows warning badge (⚠️) on task                 │
+│     Tooltip: "We parsed this as one task. Correct?"         │
+│                                                              │
+│  5. User clicks badge → Correction Modal opens:             │
+│     ┌─────────────────────────────────────────────────┐     │
+│     │  Original Input:                                 │     │
+│     │  "Add get milk and bread to groceries"          │     │
+│     │                                                  │     │
+│     │  We Parsed:                                      │     │
+│     │  • Title: "get milk and bread"                  │     │
+│     │  • List: Groceries                              │     │
+│     │                                                  │     │
+│     │  Actions:                                        │     │
+│     │  [✓ Correct] [✏️ Edit] [📋 Split] [🗑️ Delete]   │     │
+│     └─────────────────────────────────────────────────┘     │
+│                                                              │
+│  6. Correction saved to training_examples table             │
+│                                                              │
+│  7. Training examples used to:                              │
+│     • Improve prompt engineering (few-shot examples)        │
+│     • Fine-tune model (future)                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Data Model
+```prisma
+model TrainingExample {
+  id             String   @id @default(uuid())
+  rawInput       String   // Original voice input
+  originalParse  Json     // What the LLM initially extracted
+  correctedParse Json     // What the user corrected it to
+  module         String   // "tasks", "finance", "fitness"
+  feedbackType   String   // "confirmed", "corrected", "split", "rejected"
+  createdAt      DateTime @default(now())
+}
+```
+
+### Implementation Phases
+
+| Phase | Scope |
+|-------|-------|
+| PoC | Store raw_input on tasks, no correction UI |
+| MVP | Warning badge + correction modal + save to training_examples |
+| Future | Use corrections as few-shot examples, fine-tuning pipeline |
 
 ---
 
@@ -156,8 +359,9 @@ The LLM parses user input and classifies intent + extracts entities. Each module
 If a command cannot be properly classified:
 1. Add the raw request to the **Inbox** (for Tasks) or appropriate default location
 2. Notify the user that it was not properly processed
-3. Indicate what part of the input could not be parsed (when possible)
-4. User can manually modify/categorize it later
+3. Flag the task with `parse_warning` for correction UI
+4. Indicate what part of the input could not be parsed (when possible)
+5. User can manually modify/categorize it later via "Teach the System" flow
 
 ### Module-Specific Parsing
 
@@ -171,10 +375,11 @@ See individual module specs for detailed extraction rules:
 
 ---
 
-## iPhone Integration
+## Input Methods
 
-### Shortcut Flow (Using Built-in STT)
+### iPhone Integration
 
+**Shortcut Flow (Using Built-in STT)**
 ```
 [Action Button Press]
        │
@@ -185,22 +390,29 @@ See individual module specs for detailed extraction rules:
 [Returns transcribed text string]
        │
        ▼
-[Send to n8n webhook as JSON payload]
+[POST to https://life.maverickapplications.com/api/voice]
+[Header: X-API-Key: <api_key>]
+[Body: { "input": "<transcribed_text>" }]
        │
-       ▼
-[n8n: Call LLM for intent parsing]
+       ├── SUCCESS → Show notification: "✓ <task_title> added"
        │
-       ▼
-[n8n: Route to Life Tracker API endpoint]
-       │
-       ▼
-[n8n: Return response]
-       │
-       ▼
-[iOS Shortcut: Show Notification with result]
+       └── FAILURE → Show notification: "Server unavailable"
+                     Save to Reminders: "[PENDING] <text>"
 ```
 
 **Key Decision**: Use iPhone's on-device "Dictate Text" action rather than self-hosted Whisper. Simpler, no audio files to manage.
+
+### macOS Integration
+
+**Primary**: macOS Shortcuts app (mirrors iOS flow)
+- Keyboard shortcut trigger (e.g., ⌘⇧Space)
+- Uses macOS dictation
+- Same API endpoint and flow as iOS
+
+**Alternatives to Investigate Later**:
+- Raycast extension (popular launcher with voice support)
+- Alfred workflow (powerful automation)
+- Custom menu bar app (always accessible)
 
 ### Deferred Features
 
@@ -212,15 +424,17 @@ See individual module specs for detailed extraction rules:
 
 | Layer | Technology | Rationale |
 |-------|------------|-----------|
-| **Language** | TypeScript | Known, excellent DX, type safety |
-| **Backend** | Node.js (Express or Fastify) | Simple, fast, TypeScript native |
+| **Monorepo** | pnpm + Turborepo | Fast builds, efficient dependency management |
+| **Language** | TypeScript (strict mode) | Type safety, excellent DX |
+| **Backend** | Fastify | Faster than Express, better TypeScript support, schema validation |
 | **Database** | PostgreSQL | Robust, relational, good for structured data |
 | **ORM** | Prisma | Type-safe, great DX, easy migrations |
-| **Frontend** | React + Vite | Industry standard, component-based, fast builds |
-| **LLM** | Self-hosted gpt-oss-20b | Privacy, no API costs, local control |
-| **Orchestration** | n8n | Already in Stephen's infrastructure |
-| **Auth** | Simple token/password | Single user MVP |
-| **Mobile** | Web clip initially | Responsive web app, upgrade to PWA later |
+| **Frontend** | React 18 + Vite | Industry standard, component-based, fast builds |
+| **State** | Zustand | Simple, minimal boilerplate, good TypeScript support |
+| **Styling** | Tailwind CSS | Utility-first, rapid development, responsive design |
+| **LLM** | gpt-oss-20b via Ollama | Privacy, no API costs, local control, 16GB memory requirement |
+| **Auth** | Custom JWT + API keys | Simple, no external dependencies |
+| **Hosting** | Local home server | Full control, no recurring costs |
 
 ### Data Model Approach
 
@@ -236,6 +450,144 @@ Rationale:
 
 ---
 
+## Project Structure
+
+```
+lifetracker/
+├── packages/
+│   ├── core/                    # Shared utilities, auth, types
+│   │   ├── src/
+│   │   │   ├── auth/            # Authentication logic
+│   │   │   ├── db/              # Prisma client, base models
+│   │   │   ├── llm/             # LLM client, prompt utilities
+│   │   │   ├── utils/           # Common utilities (listName, etc.)
+│   │   │   └── types/           # Shared TypeScript types
+│   │   └── package.json
+│   │
+│   ├── api/                     # Fastify API server
+│   │   ├── src/
+│   │   │   ├── server.ts        # Server setup, middleware
+│   │   │   ├── routes/          # Route registration
+│   │   │   └── modules/         # Module route handlers
+│   │   └── package.json
+│   │
+│   ├── web/                     # React + Vite frontend
+│   │   ├── src/
+│   │   │   ├── components/      # Shared UI components
+│   │   │   ├── modules/         # Module-specific UI
+│   │   │   ├── hooks/           # Shared React hooks
+│   │   │   └── stores/          # Zustand stores
+│   │   └── package.json
+│   │
+│   └── modules/                 # Feature modules
+│       ├── tasks/               # Tasks module
+│       │   ├── api/             # API routes & handlers
+│       │   ├── web/             # React components
+│       │   ├── llm/             # LLM prompts & parsing
+│       │   ├── schema.prisma    # Module-specific schema
+│       │   └── index.ts         # Module registration
+│       │
+│       ├── finance/             # Finance module (future)
+│       ├── fitness/             # Fitness module (future)
+│       └── shopping/            # Shopping module (future)
+│
+├── prisma/
+│   └── schema.prisma            # Combined schema
+│
+├── docker-compose.yml           # PostgreSQL + Ollama
+├── package.json                 # Monorepo root
+├── pnpm-workspace.yaml          # Workspace config
+└── turbo.json                   # Turborepo config
+```
+
+### Module Interface
+
+Each module exports a standard interface:
+
+```typescript
+// packages/modules/tasks/index.ts
+import type { Module } from '@lifetracker/core';
+
+export const tasksModule: Module = {
+  name: 'tasks',
+  version: '1.0.0',
+
+  // API routes
+  routes: (router) => {
+    router.get('/tasks', handlers.list);
+    router.post('/tasks', handlers.create);
+    router.patch('/tasks/:id', handlers.update);
+    router.delete('/tasks/:id', handlers.remove);
+  },
+
+  // LLM intent patterns for routing
+  intents: [
+    { pattern: /add|create|new.*task/i, action: 'create_task' },
+    { pattern: /complete|done|finish/i, action: 'complete_task' },
+    { pattern: /show|list|what.*tasks?/i, action: 'query_tasks' },
+  ],
+
+  // Module-specific LLM parsing
+  parseIntent: async (input: string, llm: LLMClient) => {
+    // Returns structured extraction
+  },
+};
+```
+
+---
+
+## LLM Setup (gpt-oss-20b via Ollama)
+
+### Prerequisites
+- Home server with 16GB+ RAM (for gpt-oss-20b)
+- Docker installed
+
+### Installation
+```bash
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Pull gpt-oss-20b model
+ollama pull gpt-oss:20b
+
+# Verify installation
+ollama run gpt-oss:20b "Hello, world"
+```
+
+### Docker Compose (Alternative)
+```yaml
+services:
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]  # If GPU available
+
+volumes:
+  ollama_data:
+```
+
+### API Usage
+```typescript
+// packages/core/src/llm/client.ts
+const response = await fetch('http://localhost:11434/api/generate', {
+  method: 'POST',
+  body: JSON.stringify({
+    model: 'gpt-oss:20b',
+    prompt: buildPrompt(userInput),
+    stream: false,
+  }),
+});
+```
+
+---
+
 ## Raspberry Pi Dashboard (Future)
 
 **Potential Features**:
@@ -248,41 +600,53 @@ Rationale:
 
 ---
 
-## Development Plan
+## Development Phases
 
-### Build Order
+### Phase 1: PoC — Validate Core Flow
 
-```
-1. Define module purpose and scope
-           │
-           ▼
-2. List user stories / use cases
-           │
-           ▼
-3. Identify entities and relationships
-           │
-           ▼
-4. Design data model
-           │
-           ▼
-5. Build API (CRUD endpoints)
-           │
-           ▼
-6. Build Frontend (UI to view/edit)
-           │
-           ▼
-7. Build LLM intent parser + n8n workflow
-           │
-           ▼
-8. Build iPhone Shortcut integration
-           │
-           ▼
-9. Iterate, then repeat for next module
-```
+**Goal**: Voice → Data → Display working end-to-end
 
-### MVP Scope
+**Scope**:
+- [ ] Project scaffold (monorepo)
+- [ ] PostgreSQL + Prisma (minimal tasks schema)
+- [ ] Fastify API (4 endpoints: list, create, update, delete)
+- [ ] Simple LLM parsing (title extraction only)
+- [ ] Basic React UI (task list, add form, checkbox)
+- [ ] iOS Shortcut setup
+- [ ] API key auth (single key)
 
-Single module (Tasks) built end-to-end. Learn patterns, then apply to subsequent modules.
+**Deliverable**: Speak "Add buy milk" → task appears in web UI → mark complete
+
+### Phase 2: Tasks MVP — Full Module
+
+**Goal**: Complete Tasks module per specification
+
+**Scope**:
+- [ ] Full schema (lists, priority, due dates, tags)
+- [ ] List CRUD with auto-creation
+- [ ] Full LLM parsing (all task fields)
+- [ ] JWT auth for web
+- [ ] Parse error handling + correction UI
+- [ ] Offline queue for web
+- [ ] Responsive design
+- [ ] macOS Shortcut setup
+
+### Phase 3: Polish + Second Module
+
+**Goal**: Production-ready Tasks + begin next module
+
+**Scope**:
+- [ ] PWA manifest + service worker
+- [ ] Training examples UI
+- [ ] Smart "Today" view
+- [ ] Begin second module (TBD: Finance, Fitness, or Shopping)
+
+### Phase 4+: Expansion
+
+- Additional modules
+- Recurring tasks
+- Raspberry Pi dashboard
+- Push notifications
 
 ---
 
@@ -298,24 +662,31 @@ Single module (Tasks) built end-to-end. Learn patterns, then apply to subsequent
 - [ ] Multi-user support
 - [ ] PWA upgrade (manifest.json + service worker)
 - [ ] Bank sync for finance module (Plaid or CSV import)
+- [ ] Raycast / Alfred / menu bar app alternatives for macOS
 
 ---
 
 ## Current Status
 
-**Phase**: Tasks module — ready for implementation
+**Phase**: Tasks module — ready for PoC implementation
 
 **Completed**:
 - [x] Project architecture defined
 - [x] Tech stack selected
 - [x] MVP scope defined (Tasks module first)
 - [x] Tasks module requirements complete (see `tasks-module-spec.md`)
+- [x] Authentication strategy defined
+- [x] Offline resilience strategy defined
+- [x] Error feedback loop designed
+- [x] Modular architecture designed
 
 **Next Steps**:
-1. Design Prisma schema for Tasks module
-2. Define API endpoints
-3. Design LLM prompt for intent parsing
-4. Set up project scaffold
+1. Set up monorepo scaffold
+2. Configure PostgreSQL + Prisma
+3. Set up Ollama + gpt-oss-20b
+4. Build PoC API endpoints
+5. Build basic React UI
+6. Create iOS Shortcut
 
 ---
 
