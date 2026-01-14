@@ -8,6 +8,26 @@ This document outlines the phased development plan for the LifeTracker Proof of 
 
 ---
 
+## Table of Contents
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| [Phase 1](#phase-1-project-scaffold) | Project Scaffold | ✅ Complete |
+| [Phase 2](#phase-2-database-setup) | Database Setup | ✅ Complete |
+| [Phase 3](#phase-3-api-endpoints) | API Endpoints | ✅ Complete |
+| [Phase 4](#phase-4-frontend-basic-ui) | Frontend (Basic UI) | ✅ Complete |
+| [Phase 5](#phase-5-llm-integration) | LLM Integration | ⏳ Pending |
+| [Phase 6](#phase-6-ios-shortcut-integration) | iOS Shortcut Integration | ⏳ Pending |
+| [Phase 7](#phase-7-integration-testing--polish) | Integration Testing & Polish | ⏳ Pending |
+
+**Other Sections:**
+- [PoC Scope Summary](#poc-scope-summary)
+- [Prerequisites](#prerequisites)
+- [Summary Checklist](#summary-checklist)
+- [Files Created Summary](#files-created-summary)
+
+---
+
 ## PoC Scope Summary
 
 | Feature | Included | Excluded |

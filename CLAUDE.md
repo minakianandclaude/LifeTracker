@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LifeTracker is a personal productivity application with voice-first natural language input. Users speak commands via iOS/macOS Shortcuts, which are processed by a self-hosted LLM to extract tasks, expenses, workouts, etc.
 
-**Current Status**: PoC development in progress. Phases 1-3 complete, Phase 4 (Frontend UI) is next.
+**Current Status**: PoC development in progress. Phases 1-4 complete, Phase 5 (LLM Integration) is next.
 
 ## Development Progress
 
@@ -15,8 +15,8 @@ LifeTracker is a personal productivity application with voice-first natural lang
 | Phase 1: Project Scaffold | ✅ Complete | #1 merged |
 | Phase 2: Database Setup | ✅ Complete | #2 merged |
 | Phase 3: API Endpoints | ✅ Complete | #3 pending |
-| Phase 4: Frontend UI | 🔜 Next | - |
-| Phase 5: LLM Integration | ⏳ Pending | - |
+| Phase 4: Frontend UI | ✅ Complete | #4 pending |
+| Phase 5: LLM Integration | 🔜 Next | - |
 | Phase 6: iOS Shortcut | ⏳ Pending | - |
 | Phase 7: Integration Testing | ⏳ Pending | - |
 
@@ -63,12 +63,18 @@ lifetracker/
 │   │   │   └── schemas/
 │   │   │       └── task.ts      # Zod validation schemas
 │   │   └── .env -> ../../.env   # Symlink to root .env
-│   └── web/                     # React + Vite frontend (scaffold only)
+│   └── web/                     # React + Vite frontend
 │       ├── src/
-│       │   ├── main.tsx
-│       │   └── App.tsx
+│       │   ├── main.tsx         # React entry point
+│       │   ├── App.tsx          # Main app with state management
+│       │   ├── api/
+│       │   │   └── client.ts    # API client with Task/List types
+│       │   └── components/
+│       │       ├── TaskList.tsx     # Task list with checkboxes
+│       │       ├── AddTaskForm.tsx  # Add task form
+│       │       └── ErrorMessage.tsx # Dismissible error display
 │       ├── index.html
-│       └── vite.config.ts
+│       └── vite.config.ts       # Vite config with API proxy
 ├── .env                         # DATABASE_URL, API_KEY, OLLAMA_URL
 ├── .env.example                 # Template for .env
 ├── docker-compose.yml           # PostgreSQL + Ollama
