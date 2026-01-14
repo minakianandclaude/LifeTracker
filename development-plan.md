@@ -378,14 +378,16 @@ const intentRouter = buildIntentRouter(modules);
 #### Task List
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 1.1 | Initialize monorepo root (package.json with Bun workspaces, turbo.json) | A | ☐ |
-| 1.2 | Create .gitignore and root tsconfig.json | A | ☐ |
-| 1.3 | Create packages/core structure and config | B | ☐ |
-| 1.4 | Create packages/api structure and config | B | ☐ |
-| 1.5 | Create packages/web structure and config | B | ☐ |
-| 1.6 | Run bun install and verify build | C | ☐ |
-| 1.7 | Test API health endpoint | C | ☐ |
-| 1.8 | Test web dev server | C | ☐ |
+| 1.1 | Initialize monorepo root (package.json with Bun workspaces, turbo.json) | A | ✅ |
+| 1.2 | Create .gitignore and root tsconfig.json | A | ✅ |
+| 1.3 | Create packages/core structure and config | B | ✅ |
+| 1.4 | Create packages/api structure and config | B | ✅ |
+| 1.5 | Create packages/web structure and config | B | ✅ |
+| 1.6 | Run bun install and verify build | C | ✅ |
+| 1.7 | Test API health endpoint | C | ✅ |
+| 1.8 | Test web dev server | C | ✅ |
+
+**Status:** ✅ COMPLETED - PR #1 merged
 
 **Parallelization:** Tasks in Group B can run simultaneously (3 agents working on Core, API, Web packages)
 
@@ -400,14 +402,16 @@ const intentRouter = buildIntentRouter(modules);
 #### Task List
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 2.1 | Create docker-compose.yml (PostgreSQL + Ollama) | A | ☐ |
-| 2.2 | Add Prisma dependencies to core package | A | ☐ |
-| 2.3 | Create Prisma schema (List, Task models) | B | ☐ |
-| 2.4 | Create seed script (Inbox list) | B | ☐ |
-| 2.5 | Create environment files (.env) | A | ☐ |
-| 2.6 | Export Prisma client from core package | B | ☐ |
-| 2.7 | Start database and run migrations | C | ☐ |
-| 2.8 | Run seed and verify with Prisma Studio | C | ☐ |
+| 2.1 | Create docker-compose.yml (PostgreSQL + Ollama) | A | ✅ |
+| 2.2 | Add Prisma dependencies to core package | A | ✅ |
+| 2.3 | Create Prisma schema (List, Task models) | B | ✅ |
+| 2.4 | Create seed script (Inbox list) | B | ✅ |
+| 2.5 | Create environment files (.env) | A | ✅ |
+| 2.6 | Export Prisma client from core package | B | ✅ |
+| 2.7 | Start database and run migrations | C | ✅ |
+| 2.8 | Run seed and verify with Prisma Studio | C | ✅ |
+
+**Status:** ✅ COMPLETED - PR #2 merged
 
 **Parallelization:** Group A (infrastructure) and Group B (code) can run in parallel
 
@@ -422,26 +426,28 @@ const intentRouter = buildIntentRouter(modules);
 #### Sub-Phase 3A: Foundation
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 3A.1 | Update API package dependencies (zod) | A | ☐ |
-| 3A.2 | Create API key auth middleware | A | ☐ |
-| 3A.3 | Create task validation schemas (Zod) | A | ☐ |
-| 3A.4 | Create API environment file | A | ☐ |
+| 3A.1 | Update API package dependencies (zod) | A | ✅ |
+| 3A.2 | Create API key auth middleware | A | ✅ |
+| 3A.3 | Create task validation schemas (Zod) | A | ✅ |
+| 3A.4 | Create API environment file | A | ✅ |
 
 #### Sub-Phase 3B: Routes (can parallelize)
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 3B.1 | Create task routes (CRUD + toggle complete) | B | ☐ |
-| 3B.2 | Create list routes (read-only for PoC) | B | ☐ |
-| 3B.3 | Update server.ts with route registration | C | ☐ |
-| 3B.4 | Add error handler middleware | C | ☐ |
+| 3B.1 | Create task routes (CRUD + toggle complete) | B | ✅ |
+| 3B.2 | Create list routes (read-only for PoC) | B | ✅ |
+| 3B.3 | Update server.ts with route registration | C | ✅ |
+| 3B.4 | Add error handler middleware | C | ✅ |
 
 #### Sub-Phase 3C: Verification
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 3C.1 | Test all task endpoints with curl | D | ☐ |
-| 3C.2 | Test auth rejection (missing/wrong key) | D | ☐ |
-| 3C.3 | Test validation errors | D | ☐ |
-| 3C.4 | Test edge cases (not found, etc.) | D | ☐ |
+| 3C.1 | Test all task endpoints with curl | D | ✅ |
+| 3C.2 | Test auth rejection (missing/wrong key) | D | ✅ |
+| 3C.3 | Test validation errors | D | ✅ |
+| 3C.4 | Test edge cases (not found, etc.) | D | ✅ |
+
+**Status:** ✅ COMPLETED - PR #3 pending review
 
 **Parallelization:**
 - Sub-phase 3A completes first
