@@ -288,6 +288,8 @@ A system to capture, organize, and complete tasks — optimized for fast input v
 | 12 | Tag Extraction | LLM should extract tags from voice input | Maximize LLM utility; reduce manual work |
 | 13 | List Auto-Creation | Create list if referenced list doesn't exist | Reduce friction; may add fuzzy matching later |
 | 14 | Manual Ordering | Plan for it (position field), implement after core | Avoid early complexity; field is ready when needed |
+| 15 | List Name Storage | Lowercase + trimmed internally, Title Case display | Prevents collisions; consistent user experience |
+| 16 | Parse Warning | Add parse_warning boolean to tasks | Enables "Teach the System" correction UI |
 
 ---
 
@@ -324,6 +326,7 @@ Based on decisions above, the following entities emerge:
 | completed_at | Timestamp | No | When it was completed (for auto-hide logic) |
 | position | Integer | No | For manual drag-drop ordering (deferred implementation) |
 | raw_input | Text | No | Original voice input (for debugging/fallback) |
+| parse_warning | Boolean | Yes | Default false; true if LLM parsing was uncertain |
 | parse_errors | Text | No | What couldn't be parsed (if any) |
 | created_at | Timestamp | Yes | For default sort order |
 | updated_at | Timestamp | Yes | Standard audit field |
@@ -332,7 +335,7 @@ Based on decisions above, the following entities emerge:
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | id | UUID | Yes | Primary key |
-| name | String | Yes | User-facing name |
+| name | String | Yes | Stored as lowercase, trimmed (unique constraint) |
 | is_system | Boolean | Yes | True for Inbox, false for user-created |
 | is_deletable | Boolean | Yes | False for Inbox, true for user-created |
 | position | Integer | No | For ordering lists in sidebar |
@@ -343,6 +346,29 @@ Based on decisions above, the following entities emerge:
 - Cannot be deleted or renamed
 - Default destination for unparseable input
 - Default destination when no list specified
+
+**List Name Handling**
+| Context | Format | Example |
+|---------|--------|---------|
+| Storage (DB) | lowercase, trimmed | `"grocery shopping"` |
+| Display (UI) | Title Case | `"Grocery Shopping"` |
+| Comparison | lowercase, trimmed | `"grocery shopping" === "grocery shopping"` |
+| URL slug | kebab-case | `/lists/grocery-shopping` |
+
+Utility functions:
+```typescript
+// Normalize for storage and comparison
+normalizeListName(name: string): string
+  → name.toLowerCase().trim().replace(/\s+/g, ' ')
+
+// Format for display
+displayListName(name: string): string
+  → Title Case transformation
+
+// Format for URLs
+slugifyListName(name: string): string
+  → normalize then replace spaces with hyphens
+```
 
 ### Tag
 | Field | Type | Required | Notes |
