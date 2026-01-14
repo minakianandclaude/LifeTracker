@@ -28,13 +28,14 @@ This document outlines the phased development plan for the LifeTracker Proof of 
 
 Before starting development, ensure the following are available:
 
-- [ ] Node.js 20+ installed
-- [ ] pnpm 8+ installed (`npm install -g pnpm`)
+- [ ] Bun 1.0+ installed (`curl -fsSL https://bun.sh/install | bash`)
 - [ ] Docker + Docker Compose installed
 - [ ] PostgreSQL client (psql) for debugging
 - [ ] iPhone with Shortcuts app
 - [ ] Home server accessible via `life.maverickapplications.com` (or local IP for dev)
 - [ ] Text editor / IDE with TypeScript support
+
+> **Note:** Bun replaces Node.js, npm/pnpm, and tsx. It runs TypeScript natively.
 
 ---
 
@@ -51,7 +52,7 @@ Empty but properly configured monorepo that builds without errors.
 #### 1.1 Initialize Monorepo Root
 ```bash
 mkdir lifetracker && cd lifetracker
-pnpm init
+bun init -y
 ```
 
 Create `package.json`:
@@ -60,6 +61,7 @@ Create `package.json`:
   "name": "lifetracker",
   "version": "0.1.0",
   "private": true,
+  "workspaces": ["packages/*"],
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
@@ -69,18 +71,11 @@ Create `package.json`:
   "devDependencies": {
     "turbo": "^2.0.0",
     "typescript": "^5.3.0"
-  },
-  "packageManager": "pnpm@8.15.0"
+  }
 }
 ```
 
-#### 1.2 Create Workspace Configuration
-
-Create `pnpm-workspace.yaml`:
-```yaml
-packages:
-  - "packages/*"
-```
+#### 1.2 Create Turborepo Configuration
 
 Create `turbo.json`:
 ```json
@@ -167,9 +162,9 @@ Create `packages/api/package.json`:
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
+    "build": "bun build src/server.ts --outdir dist --target node",
+    "dev": "bun --watch src/server.ts",
+    "start": "bun dist/server.js",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -179,7 +174,6 @@ Create `packages/api/package.json`:
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "tsx": "^4.7.0",
     "typescript": "^5.3.0"
   }
 }
@@ -394,11 +388,11 @@ dist/
 
 | Test | Command | Expected Result |
 |------|---------|-----------------|
-| Install dependencies | `pnpm install` | No errors, node_modules created |
-| Build all packages | `pnpm build` | All packages compile successfully |
-| Start API server | `cd packages/api && pnpm dev` | Server starts on port 3000 |
+| Install dependencies | `bun install` | No errors, node_modules created |
+| Build all packages | `bun run build` | All packages compile successfully |
+| Start API server | `cd packages/api && bun run dev` | Server starts on port 3000 |
 | Health check | `curl http://localhost:3000/health` | Returns `{"status":"ok",...}` |
-| Start web dev | `cd packages/web && pnpm dev` | Vite starts on port 5173 |
+| Start web dev | `cd packages/web && bun run dev` | Vite starts on port 5173 |
 | View web app | Open `http://localhost:5173` | Shows "LifeTracker" heading |
 
 ### Edge Cases
@@ -567,7 +561,7 @@ Update `packages/core/package.json` to add seed script:
 ```json
 {
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "bun prisma/seed.ts"
   }
 }
 ```
@@ -633,11 +627,11 @@ Update `packages/core/package.json` scripts:
 |------|---------|-----------------|
 | Start database | `docker compose up -d postgres` | PostgreSQL container running |
 | Check DB connection | `docker exec -it lifetracker-db psql -U lifetracker -c '\l'` | Shows lifetracker database |
-| Generate Prisma client | `cd packages/core && pnpm db:generate` | Client generated successfully |
-| Push schema to DB | `cd packages/core && pnpm db:push` | Tables created |
-| Seed database | `cd packages/core && pnpm db:seed` | Inbox list created |
+| Generate Prisma client | `cd packages/core && bun run db:generate` | Client generated successfully |
+| Push schema to DB | `cd packages/core && bun run db:push` | Tables created |
+| Seed database | `cd packages/core && bun run db:seed` | Inbox list created |
 | Verify seed | `docker exec -it lifetracker-db psql -U lifetracker -c 'SELECT * FROM lists'` | Shows Inbox row |
-| Open Prisma Studio | `cd packages/core && pnpm db:studio` | Browser opens with DB UI |
+| Open Prisma Studio | `cd packages/core && bun run db:studio` | Browser opens with DB UI |
 
 ### Edge Cases
 
@@ -1012,7 +1006,7 @@ NODE_ENV="development"
 
 | Test | Command | Expected Result |
 |------|---------|-----------------|
-| Start API | `cd packages/api && pnpm dev` | Server listening on port 3000 |
+| Start API | `cd packages/api && bun run dev` | Server listening on port 3000 |
 | Health check | `curl http://localhost:3000/health` | `{"status":"ok",...}` |
 | Missing API key | `curl http://localhost:3000/api/tasks` | 401 Unauthorized |
 | List tasks (empty) | `curl -H "X-API-Key: dev-api-key-change-in-production" http://localhost:3000/api/tasks` | `{"tasks":[]}` |
@@ -2028,8 +2022,8 @@ echo "PostgreSQL ready!"
 # Check if database is seeded
 echo "Checking database..."
 cd packages/core
-pnpm db:push
-pnpm db:seed
+bun run db:push
+bun run db:seed
 cd ../..
 
 # Check Ollama model
@@ -2043,7 +2037,7 @@ echo "LLM ready!"
 # Start API (background)
 echo "Starting API server..."
 cd packages/api
-pnpm dev &
+bun run dev &
 API_PID=$!
 cd ../..
 
@@ -2057,7 +2051,7 @@ echo "API ready!"
 # Start Web (foreground)
 echo "Starting web app..."
 cd packages/web
-pnpm dev
+bun run dev
 
 # Cleanup on exit
 trap "kill $API_PID 2>/dev/null; docker compose down" EXIT
@@ -2086,12 +2080,16 @@ NODE_ENV="production"
 
 ## Build for Production
 ```bash
-pnpm build
+bun run build
 ```
 
-## Run with PM2
+## Run with PM2 (or Bun directly)
 ```bash
+# Option 1: PM2 (requires Node.js)
 pm2 start packages/api/dist/server.js --name lifetracker-api
+
+# Option 2: Bun (recommended)
+bun packages/api/src/server.ts
 ```
 
 ## Nginx Config Example
@@ -2164,8 +2162,7 @@ server {
 
 | File | Purpose |
 |------|---------|
-| `package.json` | Monorepo root |
-| `pnpm-workspace.yaml` | Workspace config |
+| `package.json` | Monorepo root (includes Bun workspaces config) |
 | `turbo.json` | Build pipeline |
 | `docker-compose.yml` | PostgreSQL + Ollama |
 | `.env` | Environment variables |

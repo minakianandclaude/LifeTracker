@@ -299,7 +299,7 @@ lifetracker/
 │   └── schema.prisma            # Combined schema (imports modules)
 │
 ├── docker-compose.yml           # Local development setup
-├── package.json                 # Monorepo root (pnpm workspaces)
+├── package.json                 # Monorepo root (Bun workspaces)
 └── turbo.json                   # Turborepo config
 ```
 
@@ -378,12 +378,12 @@ const intentRouter = buildIntentRouter(modules);
 #### Task List
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 1.1 | Initialize monorepo root (package.json, pnpm-workspace.yaml, turbo.json) | A | ☐ |
+| 1.1 | Initialize monorepo root (package.json with Bun workspaces, turbo.json) | A | ☐ |
 | 1.2 | Create .gitignore and root tsconfig.json | A | ☐ |
 | 1.3 | Create packages/core structure and config | B | ☐ |
 | 1.4 | Create packages/api structure and config | B | ☐ |
 | 1.5 | Create packages/web structure and config | B | ☐ |
-| 1.6 | Run pnpm install and verify build | C | ☐ |
+| 1.6 | Run bun install and verify build | C | ☐ |
 | 1.7 | Test API health endpoint | C | ☐ |
 | 1.8 | Test web dev server | C | ☐ |
 
@@ -612,12 +612,13 @@ const intentRouter = buildIntentRouter(modules);
 
 | Layer | Technology | Notes |
 |-------|------------|-------|
-| **Monorepo** | pnpm + Turborepo | Fast, efficient monorepo management |
-| **Language** | TypeScript (strict) | Full type safety |
-| **Backend** | Fastify | Faster than Express, better TypeScript support |
+| **Runtime/Package Manager** | Bun | All-in-one JS runtime, fastest package installs, native TS |
+| **Monorepo** | Bun Workspaces + Turborepo | Fast builds, efficient caching |
+| **Language** | TypeScript (strict) | Full type safety, native Bun support |
+| **Backend** | Fastify (on Bun) | 5% faster on Bun than Node, great TS support |
 | **Database** | PostgreSQL | Robust, relational |
-| **ORM** | Prisma | Type-safe, great migrations |
-| **Frontend** | React 18 + Vite | Fast builds, modern React |
+| **ORM** | Prisma | Type-safe, great migrations, official Bun support |
+| **Frontend** | React 18 + Vite | Fast builds, modern React (keep Vite for HMR) |
 | **State** | Zustand | Simple, minimal boilerplate |
 | **Styling** | Tailwind CSS | Utility-first, rapid development |
 | **LLM** | gpt-oss-20b via Ollama | Local hosting, good performance |
@@ -627,16 +628,18 @@ const intentRouter = buildIntentRouter(modules);
 
 ## 9. Critical Files to Create (PoC)
 
-1. `package.json` - Monorepo root
-2. `pnpm-workspace.yaml` - Workspace config
-3. `turbo.json` - Build pipeline
-4. `packages/core/src/db/schema.prisma` - Database schema
+1. `package.json` - Monorepo root (includes Bun workspaces config)
+2. `turbo.json` - Build pipeline
+3. `bunfig.toml` - Bun configuration (optional)
+4. `packages/core/prisma/schema.prisma` - Database schema
 5. `packages/api/src/server.ts` - API entry point
-6. `packages/api/src/modules/tasks/routes.ts` - Task endpoints
+6. `packages/api/src/routes/tasks.ts` - Task endpoints
 7. `packages/web/src/App.tsx` - React entry
-8. `packages/web/src/modules/tasks/TaskList.tsx` - Task UI
+8. `packages/web/src/components/TaskList.tsx` - Task UI
 9. `docker-compose.yml` - PostgreSQL + Ollama
 10. `ios-shortcut-export.shortcut` - iOS Shortcut template
+
+> **Note:** Bun uses `workspaces` field in package.json instead of separate workspace config file.
 
 ---
 
@@ -649,3 +652,30 @@ const intentRouter = buildIntentRouter(modules);
 | LLM hosting | Needs setup (Ollama + gpt-oss-20b) |
 | Mac integration | macOS Shortcuts (note Raycast/Alfred as alternatives) |
 | Priority for second module | TBD after Tasks MVP |
+
+---
+
+## 11. Items Needing Future Review
+
+> **Note:** These items are documented but may need replanning when we reach them in development.
+
+| Item | Status | Notes |
+|------|--------|-------|
+| **Offline Queue (Web)** | Planned but not detailed | IndexedDB + sync logic needs detailed implementation plan when we reach MVP phase |
+| **JWT Auth Flow** | Deferred to MVP | PoC uses API key only; full JWT + refresh token flow needs detailed design |
+| **Training Examples UI** | Conceptual only | "Teach the System" correction modal needs UI/UX design |
+| **PWA Service Worker** | Future phase | Background Sync API implementation not planned yet |
+| **macOS Shortcut** | Noted as alternative | Mirrors iOS but not detailed; Raycast/Alfred alternatives not explored |
+| **Second Module Selection** | TBD | Finance vs Fitness vs Shopping - decision deferred |
+| **Recurring Tasks** | Deferred | High priority for MVP but no schema/logic designed yet |
+| **Multi-item NLP Parsing** | Deferred | "Add milk and eggs" → two tasks; LLM prompt not designed |
+| **Raspberry Pi Dashboard** | Future | No implementation plan |
+
+### Bun-Specific Items to Verify During Implementation
+
+| Item | Concern | Resolution |
+|------|---------|------------|
+| Prisma + Bun | Works but verify `--bun` flag behavior | Test `bunx prisma generate` and migrations |
+| Fastify + Bun | Works (5% faster) but verify all plugins | Test @fastify/cors compatibility |
+| Vite + Bun | Using Vite for frontend (not Bun's bundler) | Keep this approach for better React HMR |
+| Turborepo + Bun | Should work; uses Bun as package manager | Verify turbo commands work with bun |

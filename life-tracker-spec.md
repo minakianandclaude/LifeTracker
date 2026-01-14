@@ -424,12 +424,13 @@ See individual module specs for detailed extraction rules:
 
 | Layer | Technology | Rationale |
 |-------|------------|-----------|
-| **Monorepo** | pnpm + Turborepo | Fast builds, efficient dependency management |
-| **Language** | TypeScript (strict mode) | Type safety, excellent DX |
-| **Backend** | Fastify | Faster than Express, better TypeScript support, schema validation |
+| **Runtime/Package Manager** | Bun | All-in-one JS runtime, native TypeScript, fastest installs |
+| **Monorepo** | Bun Workspaces + Turborepo | Fast builds, efficient caching |
+| **Language** | TypeScript (strict mode) | Type safety, excellent DX, native Bun support |
+| **Backend** | Fastify (on Bun) | 5% faster on Bun than Node, great TypeScript support |
 | **Database** | PostgreSQL | Robust, relational, good for structured data |
-| **ORM** | Prisma | Type-safe, great DX, easy migrations |
-| **Frontend** | React 18 + Vite | Industry standard, component-based, fast builds |
+| **ORM** | Prisma | Type-safe, great DX, easy migrations, official Bun support |
+| **Frontend** | React 18 + Vite | Industry standard, component-based, fast builds (keep Vite for HMR) |
 | **State** | Zustand | Simple, minimal boilerplate, good TypeScript support |
 | **Styling** | Tailwind CSS | Utility-first, rapid development, responsive design |
 | **LLM** | gpt-oss-20b via Ollama | Privacy, no API costs, local control, 16GB memory requirement |
@@ -495,8 +496,7 @@ lifetracker/
 │   └── schema.prisma            # Combined schema
 │
 ├── docker-compose.yml           # PostgreSQL + Ollama
-├── package.json                 # Monorepo root
-├── pnpm-workspace.yaml          # Workspace config
+├── package.json                 # Monorepo root (includes Bun workspaces config)
 └── turbo.json                   # Turborepo config
 ```
 
@@ -690,8 +690,28 @@ const response = await fetch('http://localhost:11434/api/generate', {
 
 ---
 
+## Items Needing Future Planning
+
+> **Note:** These items are documented but need detailed planning when we reach them in development.
+
+| Item | Phase | Status |
+|------|-------|--------|
+| **Offline Queue (Web)** | MVP | IndexedDB + sync logic needs detailed implementation |
+| **JWT Auth Flow** | MVP | PoC uses API key only; full JWT + refresh token needs design |
+| **Training Examples UI** | MVP | "Teach the System" correction modal needs UI/UX design |
+| **PWA Service Worker** | Future | Background Sync API implementation not planned |
+| **macOS Shortcut** | MVP | Mirrors iOS but not detailed; Raycast/Alfred not explored |
+| **Second Module Selection** | Post-MVP | Finance vs Fitness vs Shopping - TBD |
+| **Recurring Tasks** | MVP | High priority but no schema/logic designed |
+| **Multi-item NLP Parsing** | Future | "Add milk and eggs" → two tasks; prompt not designed |
+| **Raspberry Pi Dashboard** | Future | No implementation plan |
+
+---
+
 ## Related Documents
 
 | Document | Description |
 |----------|-------------|
 | `tasks-module-spec.md` | Full specification for Tasks module including all decisions, entities, and deferred items |
+| `poc-development-plan.md` | Detailed phased development plan for PoC implementation |
+| `development-plan.md` | High-level task tracking and architecture decisions |
