@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model List {
+  id          String   @id @default(uuid())
+  name        String   @unique  // Stored lowercase, trimmed
+  isSystem    Boolean  @default(false) @map("is_system")
+  isDeletable Boolean  @default(true) @map("is_deletable")
+  position    Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tasks       Task[]
+
+  @@map("lists")
+}
+
+model Task {
+  id           String    @id @default(uuid())
+  title        String
+  notes        String?
+  listId       String    @map("list_id")
+  priority     Priority?
+  dueDate      DateTime? @map("due_date") @db.Date
+  completed    Boolean   @default(false)
+  completedAt  DateTime? @map("completed_at")
+  position     Int       @default(0)
+  rawInput     String?   @map("raw_input")
+  parseWarning Boolean   @default(false) @map("parse_warning")
+  parseErrors  String?   @map("parse_errors")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  list         List      @relation(fields: [listId], references: [id])
+
+  @@map("tasks")
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
