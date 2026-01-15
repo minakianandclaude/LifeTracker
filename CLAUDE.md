@@ -26,7 +26,7 @@ LifeTracker is a personal productivity application with voice-first natural lang
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Database Schema Extension | Pending |
+| Phase 1 | Database Schema Extension | ✅ Complete |
 | Phase 2 | CI/CD Pipeline | Pending |
 | Phase 3 | Authentication System (JWT + API Key) | Pending |
 | Phase 4 | List Management (Full CRUD) | Pending |
@@ -63,6 +63,11 @@ git checkout -b mvp/phase-N-description
 ```
 
 **Completing a phase:**
+1. Update documentation before creating PR:
+   - Update phase status to "✅ Complete" in `CLAUDE.md` MVP progress table
+   - Update phase status to "Complete" in `docs/mvp-development-plan.md` Table of Contents
+   - Mark Done criteria checkboxes as complete in `docs/mvp-development-plan.md`
+2. Push and create PR:
 ```bash
 git push -u origin mvp/phase-N-description
 gh pr create --base mvp --title "Phase N: Description"
