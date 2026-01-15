@@ -13,6 +13,10 @@ interface OllamaResponse {
   done: boolean;
 }
 
+interface OllamaTagsResponse {
+  models?: Array<{ name: string }>;
+}
+
 export async function parseTaskInput(rawInput: string): Promise<ParsedTask> {
   const prompt = buildPrompt(rawInput);
 
@@ -35,7 +39,7 @@ export async function parseTaskInput(rawInput: string): Promise<ParsedTask> {
       throw new Error(`Ollama request failed: ${response.status}`);
     }
 
-    const data: OllamaResponse = await response.json();
+    const data = (await response.json()) as OllamaResponse;
     return parseResponse(data.response, rawInput);
   } catch (error) {
     console.error('LLM parsing failed:', error);
@@ -142,8 +146,8 @@ export async function checkLLMHealth(): Promise<boolean> {
     const response = await fetch(`${OLLAMA_URL}/api/tags`);
     if (!response.ok) return false;
 
-    const data = await response.json();
-    const hasModel = data.models?.some((m: { name: string }) => m.name.startsWith('gpt-oss'));
+    const data = (await response.json()) as OllamaTagsResponse;
+    const hasModel = data.models?.some((m) => m.name.startsWith('gpt-oss')) ?? false;
     return hasModel;
   } catch {
     return false;
