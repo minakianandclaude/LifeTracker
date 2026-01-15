@@ -270,7 +270,7 @@ This project uses 15 specialized agents in `.claude/agents/` to enable parallel 
 ```
 Main Instance (Orchestrator)
     │
-    ├── Reads development-plan.md
+    ├── Reads docs/development-plan.md
     ├── Tracks progress via TodoWrite
     ├── Dispatches parallel agents for independent tasks
     ├── Reviews results and coordinates integration
@@ -314,7 +314,7 @@ Main Instance (Orchestrator)
 
 ### Parallel Development Example
 
-Per `development-plan.md`, many tasks can be parallelized:
+Per `docs/development-plan.md`, many tasks can be parallelized:
 
 ```
 Phase 1 (Project Scaffold):
@@ -378,10 +378,11 @@ Phase 4B (UI Components):
 
 | Document | Purpose |
 |----------|---------|
-| `life-tracker-spec.md` | Full project specification and architecture |
-| `tasks-module-spec.md` | Tasks module requirements and entity definitions |
-| `development-plan.md` | High-level development phases and task tracking |
-| `poc-development-plan.md` | Detailed PoC implementation steps with code examples |
+| `docs/life-tracker-spec.md` | Full project specification and architecture |
+| `docs/tasks-module-spec.md` | Tasks module requirements and entity definitions |
+| `docs/development-plan.md` | High-level development phases and task tracking |
+| `docs/poc-development-plan.md` | Detailed PoC implementation steps with code examples |
+| `docs/ios-shortcut-setup.md` | iOS Shortcut setup guide for voice input |
 
 ## Quick Start (Development)
 
