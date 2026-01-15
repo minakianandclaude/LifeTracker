@@ -196,8 +196,8 @@ iOS Shortcut (Dictate Text) → POST /api/voice → LLM parses intent → Module
   - `test:` adding/updating tests
   - `docs:` documentation changes
   - `chore:` maintenance tasks
-- **No AI Attribution**: Do not include "Co-Authored-By: Claude" or any AI attribution in commit messages
-- **Pull Requests**: Include description, testing notes, and link to related issues
+- **No AI Attribution**: Do not include "Co-Authored-By: Claude" or any AI attribution in commit messages or pull request descriptions
+- **Pull Requests**: Include description, testing notes, and link to related issues. Do not include AI attribution or "Generated with Claude" footers
 - **Squash Merges**: Preferred for feature branches to maintain clean history
 
 ### Security Practices
