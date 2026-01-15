@@ -16,8 +16,8 @@ This document outlines the phased development plan for the LifeTracker Proof of 
 | [Phase 2](#phase-2-database-setup) | Database Setup | ✅ Complete |
 | [Phase 3](#phase-3-api-endpoints) | API Endpoints | ✅ Complete |
 | [Phase 4](#phase-4-frontend-basic-ui) | Frontend (Basic UI) | ✅ Complete |
-| [Phase 5](#phase-5-llm-integration) | LLM Integration | ⏳ Pending |
-| [Phase 6](#phase-6-ios-shortcut-integration) | iOS Shortcut Integration | ⏳ Pending |
+| [Phase 5](#phase-5-llm-integration) | LLM Integration | ✅ Complete |
+| [Phase 6](#phase-6-ios-shortcut-integration) | iOS Shortcut Integration | 🔜 Next |
 | [Phase 7](#phase-7-integration-testing--polish) | Integration Testing & Polish | ⏳ Pending |
 
 **Other Sections:**
