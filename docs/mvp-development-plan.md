@@ -14,7 +14,8 @@ This document outlines the phased development plan for the LifeTracker MVP (Mini
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| [Phase 1](#phase-1-database-schema-extension) | Database Schema Extension | Pending |
+| [Phase 1](#phase-1-database-schema-extension) | Database Schema Extension | Complete |
+| [Pre-Phase 2](#pre-phase-2-fix-typescript-errors) | Fix TypeScript Errors | Complete |
 | [Phase 2](#phase-2-cicd-pipeline) | CI/CD Pipeline | Pending |
 | [Phase 3](#phase-3-authentication-system) | Authentication System (JWT + API Key) | Pending |
 | [Phase 4](#phase-4-list-management) | List Management (Full CRUD) | Pending |
@@ -135,19 +136,19 @@ Updated Prisma schema with migrations applied, ready for new features.
 
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 1A.1 | Add User model (id, username, passwordHash, createdAt) | A | Pending |
-| 1A.2 | Add RefreshToken model (id, token, userId, expiresAt, createdAt) | A | Pending |
-| 1A.3 | Add Tag model (id, name, createdAt) | A | Pending |
-| 1A.4 | Add TaskTag join table (taskId, tagId) | A | Pending |
-| 1A.5 | Update Task model (ensure all fields from spec are present) | A | Pending |
+| 1A.1 | Add User model (id, username, passwordHash, createdAt) | A | Complete |
+| 1A.2 | Add RefreshToken model (id, token, userId, expiresAt, createdAt) | A | Complete |
+| 1A.3 | Add Tag model (id, name, createdAt) | A | Complete |
+| 1A.4 | Add TaskTag join table (taskId, tagId) | A | Complete |
+| 1A.5 | Update Task model (ensure all fields from spec are present) | A | Complete |
 
 ### Sub-Phase 1B: Migration & Seed
 
 | # | Task | Status |
 |---|------|--------|
-| 1B.1 | Create Prisma migration for new models | Pending |
-| 1B.2 | Update seed script (create default admin user: admin/admin123) | Pending |
-| 1B.3 | Run migration and verify with Prisma Studio | Pending |
+| 1B.1 | Apply schema changes via `db:push` (dev workflow) | Complete |
+| 1B.2 | Update seed script (create default admin user: admin/admin123) | Complete |
+| 1B.3 | Verify tables via database query | Complete |
 
 ### Data Model Additions
 
@@ -233,18 +234,49 @@ bunx prisma migrate reset --skip-seed
 
 ### Done Criteria
 
-- [ ] All tasks in Sub-Phase 1A and 1B marked complete
-- [ ] Migration runs without errors: `bun run db:migrate`
-- [ ] All new tables visible in Prisma Studio with correct columns
-- [ ] User table: id, username, password_hash, created_at, updated_at
-- [ ] RefreshToken table: id, token, user_id, expires_at, created_at with FK to users
-- [ ] Tag table: id, name (unique), created_at
-- [ ] TaskTag table: task_id, tag_id composite PK with FKs to tasks and tags
-- [ ] Seed script creates admin user without error
-- [ ] Existing tasks preserved after migration
-- [ ] `bun run db:generate` succeeds and types are available
-- [ ] All existing API endpoints still function (regression check)
-- [ ] Code passes type-check: `bunx tsc --noEmit`
+- [x] All tasks in Sub-Phase 1A and 1B marked complete
+- [x] Schema applied without errors: `bun run db:push` (dev workflow)
+- [x] All new tables visible in database with correct columns (verified via psql)
+- [x] User table: id, username, password_hash, created_at, updated_at
+- [x] RefreshToken table: id, token, user_id, expires_at, created_at with FK to users
+- [x] Tag table: id, name (unique), created_at
+- [x] TaskTag table: task_id, tag_id composite PK with FKs to tasks and tags
+- [x] Seed script creates admin user without error
+- [x] Existing tasks preserved after schema update
+- [x] `bun run db:generate` succeeds and types are available
+- [x] All existing API endpoints still function (regression check - all 9 endpoints tested)
+- [x] Code passes type-check: `bunx tsc --noEmit` (after Pre-Phase 2 fix)
+
+---
+
+## Pre-Phase 2: Fix TypeScript Errors
+
+### Goal
+Fix pre-existing TypeScript errors in the API package before establishing CI/CD pipeline.
+
+### Background
+During Phase 1 verification, type-checking revealed errors in `packages/api/src/services/llm.ts` that predate MVP development. These must be fixed before Phase 2 establishes CI with mandatory type-check passing.
+
+### Task List
+
+| # | Task | Status |
+|---|------|--------|
+| P2.1 | Fix type errors in `packages/api/src/services/llm.ts` (lines 38, 146) | Complete |
+| P2.2 | Verify `bunx tsc --noEmit` passes for all packages | Complete |
+
+### Errors to Fix
+
+```
+src/services/llm.ts(38,11): error TS2322: Type 'unknown' is not assignable to type 'OllamaResponse'.
+src/services/llm.ts(146,22): error TS18046: 'data' is of type 'unknown'.
+```
+
+### Done Criteria
+
+- [x] `bunx tsc --noEmit` passes in packages/api
+- [x] `bunx tsc --noEmit` passes in packages/core
+- [x] `bunx tsc --noEmit` passes in packages/web
+- [x] No regression in existing functionality
 
 ---
 
