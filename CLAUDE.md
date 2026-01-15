@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LifeTracker is a personal productivity application with voice-first natural language input. Users speak commands via iOS/macOS Shortcuts, which are processed by a self-hosted LLM to extract tasks, expenses, workouts, etc.
 
-**Current Status**: PoC development in progress. Phases 1-5 complete, Phase 6 (iOS Shortcut) is next.
+**Current Status**: PoC development in progress. Phases 1-6 complete, Phase 7 (Integration Testing) is next.
 
 ## Development Progress
 
@@ -17,8 +17,8 @@ LifeTracker is a personal productivity application with voice-first natural lang
 | Phase 3: API Endpoints | ✅ Complete | #3 merged |
 | Phase 4: Frontend UI | ✅ Complete | #5 merged |
 | Phase 5: LLM Integration | ✅ Complete | #7 merged |
-| Phase 6: iOS Shortcut | 🔜 Next | - |
-| Phase 7: Integration Testing | ⏳ Pending | - |
+| Phase 6: iOS Shortcut | ✅ Complete | #8 merged |
+| Phase 7: Integration Testing | 🔜 Next | - |
 
 ### Current Branch Strategy
 - Always create feature branches off `main`: `feature/phase-N-description`

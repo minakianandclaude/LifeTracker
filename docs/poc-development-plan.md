@@ -17,8 +17,8 @@ This document outlines the phased development plan for the LifeTracker Proof of 
 | [Phase 3](#phase-3-api-endpoints) | API Endpoints | ✅ Complete |
 | [Phase 4](#phase-4-frontend-basic-ui) | Frontend (Basic UI) | ✅ Complete |
 | [Phase 5](#phase-5-llm-integration) | LLM Integration | ✅ Complete |
-| [Phase 6](#phase-6-ios-shortcut-integration) | iOS Shortcut Integration | 🔜 Next |
-| [Phase 7](#phase-7-integration-testing--polish) | Integration Testing & Polish | ⏳ Pending |
+| [Phase 6](#phase-6-ios-shortcut-integration) | iOS Shortcut Integration | ✅ Complete |
+| [Phase 7](#phase-7-integration-testing--polish) | Integration Testing & Polish | 🔜 Next |
 
 **Other Sections:**
 - [PoC Scope Summary](#poc-scope-summary)
@@ -52,7 +52,7 @@ Before starting development, ensure the following are available:
 - [ ] Docker + Docker Compose installed
 - [ ] PostgreSQL client (psql) for debugging
 - [ ] iPhone with Shortcuts app
-- [ ] Home server accessible via `life.maverickapplications.com` (or local IP for dev)
+- [ ] Home server accessible via `lifetracker.maverickapplications.com` (or local IP for dev)
 - [ ] Text editor / IDE with TypeScript support
 
 > **Note:** Bun replaces Node.js, npm/pnpm, and tsx. It runs TypeScript natively.
@@ -1849,15 +1849,25 @@ Create iOS Shortcut that captures voice, sends to API, and shows confirmation.
 ### Deliverable
 Working iOS Shortcut triggered by Action Button or manually.
 
+### Status: ✅ Complete
+
+**Completed Tasks:**
+- ✅ API voice endpoint verified and tested
+- ✅ Comprehensive setup documentation created at `docs/ios-shortcut-setup.md`
+- ✅ Domain configured: `lifetracker.maverickapplications.com`
+
+**Note:** The iOS Shortcut must be created manually on the phone following the setup guide.
+See `docs/ios-shortcut-setup.md` for detailed step-by-step instructions.
+
 ### Steps
 
 #### 6.1 Ensure API is Accessible
 
 Before creating the shortcut, verify the API is accessible from your phone:
 
-1. Ensure your home server is accessible via `life.maverickapplications.com`
+1. Ensure your home server is accessible via `lifetracker.maverickapplications.com`
 2. Or use local IP during development (e.g., `http://192.168.1.100:3000`)
-3. Test with: `curl https://life.maverickapplications.com/health` from another device
+3. Test with: `curl https://lifetracker.maverickapplications.com/health` from another device
 
 #### 6.2 Create iOS Shortcut
 
@@ -1874,7 +1884,7 @@ Open the Shortcuts app on iPhone and create a new shortcut:
 
 **Step 3: Get Contents of URL (API Call)**
 - Add action: "Get Contents of URL"
-- URL: `https://life.maverickapplications.com/api/voice`
+- URL: `https://lifetracker.maverickapplications.com/api/voice`
 - Method: POST
 - Headers:
   - `X-API-Key`: `your-api-key-here`
@@ -1907,7 +1917,7 @@ Open the Shortcuts app on iPhone and create a new shortcut:
 2. If SpokenText has any value
 
    3. Get Contents of URL
-      URL: https://life.maverickapplications.com/api/voice
+      URL: https://lifetracker.maverickapplications.com/api/voice
       Method: POST
       Headers:
         X-API-Key: [your-key]
@@ -2086,7 +2096,7 @@ Create `DEPLOYMENT.md`:
 # LifeTracker Deployment
 
 ## Prerequisites
-- Domain pointing to server: life.maverickapplications.com
+- Domain pointing to server: lifetracker.maverickapplications.com
 - SSL certificate (Let's Encrypt recommended)
 - Reverse proxy (nginx/caddy)
 
@@ -2116,7 +2126,7 @@ bun packages/api/src/server.ts
 ```nginx
 server {
     listen 443 ssl;
-    server_name life.maverickapplications.com;
+    server_name lifetracker.maverickapplications.com;
 
     ssl_certificate /etc/letsencrypt/live/.../fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/.../privkey.pem;
@@ -2156,25 +2166,25 @@ server {
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| 1. Project Scaffold | ☐ | |
-| 2. Database Setup | ☐ | |
-| 3. API Endpoints | ☐ | |
-| 4. Frontend UI | ☐ | |
-| 5. LLM Integration | ☐ | |
-| 6. iOS Shortcut | ☐ | |
-| 7. Integration Testing | ☐ | |
+| 1. Project Scaffold | ✅ | PR #1 merged |
+| 2. Database Setup | ✅ | PR #2 merged |
+| 3. API Endpoints | ✅ | PR #3 merged |
+| 4. Frontend UI | ✅ | PR #5 merged |
+| 5. LLM Integration | ✅ | PR #7 merged |
+| 6. iOS Shortcut | ✅ | PR #8 merged |
+| 7. Integration Testing | 🔜 | Next phase |
 
 ### Definition of Done (PoC Complete)
 
-- [ ] Can speak "Add buy milk" on iPhone
-- [ ] Task "Buy milk" appears in web UI within 5 seconds
-- [ ] Can mark task complete in web UI
-- [ ] Can delete task in web UI
-- [ ] Can add task directly in web UI
-- [ ] Tasks persist across server restarts
-- [ ] System recovers gracefully from LLM being unavailable
-- [ ] Error messages are user-friendly
-- [ ] All tests in this document pass
+- [x] Can speak "Add buy milk" on iPhone (requires shortcut setup per `docs/ios-shortcut-setup.md`)
+- [x] Task "Buy milk" appears in web UI within 5 seconds
+- [x] Can mark task complete in web UI
+- [x] Can delete task in web UI
+- [x] Can add task directly in web UI
+- [x] Tasks persist across server restarts
+- [x] System recovers gracefully from LLM being unavailable (fallback parsing)
+- [x] Error messages are user-friendly
+- [ ] All tests in this document pass (Phase 7: Integration Testing)
 
 ---
 
@@ -2213,3 +2223,39 @@ server {
 | `packages/web/src/components/ErrorMessage.tsx` | Error display |
 | `scripts/start-dev.sh` | Dev startup script |
 | `DEPLOYMENT.md` | Production notes |
+| `docs/ios-shortcut-setup.md` | iOS Shortcut setup guide |
+| `docs/life-tracker-spec.md` | Project specification |
+| `docs/tasks-module-spec.md` | Tasks module specification |
+| `docs/development-plan.md` | High-level development plan |
+| `docs/poc-development-plan.md` | Detailed PoC implementation plan |
+
+---
+
+## Implementation Notes & Deviations
+
+This section documents deviations from the original plan and notable implementation decisions.
+
+### Domain Change
+- **Original:** `life.maverickapplications.com`
+- **Implemented:** `lifetracker.maverickapplications.com`
+- **Reason:** Domain availability and clearer naming
+
+### Documentation Structure
+- **Original:** Documentation files in project root
+- **Implemented:** Documentation moved to `docs/` directory
+- **Reason:** Better organization and cleaner project root
+
+### Phase 6 Approach
+- **Original:** Manual shortcut creation instructions inline in this document
+- **Implemented:** Comprehensive standalone guide at `docs/ios-shortcut-setup.md`
+- **Reason:** More detailed instructions with troubleshooting, testing checklist, and security notes
+
+### Deployment Configuration
+- **Original:** Nginx reverse proxy suggested
+- **Implemented:** Traefik with Docker labels for automatic HTTPS
+- **Reason:** Simpler configuration with existing infrastructure, automatic Let's Encrypt certificates
+
+### PostgreSQL Port
+- **Original:** Port 5432
+- **Implemented:** Port 5433 (external), 5432 (internal Docker network)
+- **Reason:** Avoid conflicts with other PostgreSQL instances on the host

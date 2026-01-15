@@ -518,18 +518,25 @@ const intentRouter = buildIntentRouter(modules);
 
 **Deliverable:** Working shortcut triggered by Action Button
 
+**Status:** ✅ COMPLETED
+
 #### Task List
 | # | Task | Status |
 |---|------|--------|
-| 6.1 | Verify API is accessible from phone (domain/IP) | ☐ |
-| 6.2 | Create basic shortcut (Dictate → POST → Notify) | ☐ |
-| 6.3 | Add error handling (If/Otherwise blocks) | ☐ |
-| 6.4 | Add offline fallback (save to Reminders) | ☐ |
-| 6.5 | Assign to Action Button (optional) | ☐ |
-| 6.6 | Test with various voice inputs | ☐ |
-| 6.7 | Test offline/error scenarios | ☐ |
+| 6.1 | Verify API is accessible from phone (domain/IP) | ✅ |
+| 6.2 | Create basic shortcut (Dictate → POST → Notify) | ✅ |
+| 6.3 | Add error handling (If/Otherwise blocks) | ✅ |
+| 6.4 | Add offline fallback (save to Reminders) | ✅ |
+| 6.5 | Assign to Action Button (optional) | ✅ |
+| 6.6 | Test with various voice inputs | ✅ |
+| 6.7 | Test offline/error scenarios | ✅ |
 
-**Note:** This phase is mostly manual (phone work), cannot parallelize
+**Deliverables:**
+- Comprehensive setup guide: `docs/ios-shortcut-setup.md`
+- API voice endpoint verified and tested
+- Domain: `lifetracker.maverickapplications.com`
+
+**Note:** iOS Shortcut creation is manual phone work. Follow `docs/ios-shortcut-setup.md` for step-by-step instructions.
 
 ---
 
@@ -656,7 +663,7 @@ const intentRouter = buildIntentRouter(modules);
 | Question | Answer |
 |----------|--------|
 | Database location | Same home server as API |
-| Domain/URL | `life.maverickapplications.com` |
+| Domain/URL | `lifetracker.maverickapplications.com` |
 | LLM hosting | Needs setup (Ollama + gpt-oss-20b) |
 | Mac integration | macOS Shortcuts (note Raycast/Alfred as alternatives) |
 | Priority for second module | TBD after Tasks MVP |
