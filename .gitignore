@@ -7,3 +7,8 @@ dist/
 .DS_Store
 *.tsbuildinfo
 .claude/settings.local.json
+
+# Test coverage and reports
+coverage/
+playwright-report/
+test-results/

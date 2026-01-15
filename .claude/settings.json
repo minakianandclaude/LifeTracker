@@ -1,0 +1,81 @@
+{
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" =~ \\.(ts|tsx)$ ]]; then cd \"$CLAUDE_PROJECT_DIR\" && bun run biome check --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || echo \"[Hook] Biome not installed yet - run: bun add -D @biomejs/biome\"; fi'"
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" =~ \\.(ts|tsx)$ ]]; then cd \"$CLAUDE_PROJECT_DIR\" && bun run tsc --noEmit 2>/dev/null || echo \"[Hook] TypeScript not configured yet\"; fi'"
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" =~ schema\\.prisma$ ]]; then cd \"$CLAUDE_PROJECT_DIR/packages/core\" && bun run db:generate 2>/dev/null || echo \"[Hook] Prisma client regeneration skipped - packages/core not set up yet\"; fi'"
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" =~ \\.(ts|tsx)$ ]] && [[ ! \"$CLAUDE_FILE_PATH\" =~ \\.test\\.(ts|tsx)$ ]] && [[ ! \"$CLAUDE_FILE_PATH\" =~ \\.spec\\.(ts|tsx)$ ]]; then TEST_FILE=\"${CLAUDE_FILE_PATH%.*}.test.${CLAUDE_FILE_PATH##*.}\"; if [[ -f \"$TEST_FILE\" ]]; then cd \"$CLAUDE_PROJECT_DIR\" && bun test \"$TEST_FILE\" 2>/dev/null || echo \"[Hook] Tests not configured yet\"; fi; fi'"
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if [[ \"$CLAUDE_FILE_PATH\" =~ (auth|login|password|token|session|credential|secret|api.?key|encrypt|decrypt|hash|sanitize|validate|upload|download|exec|eval|query|sql).*\\.(ts|tsx)$ ]] || grep -qiE \"(password|secret|token|apikey|credential|auth|jwt|bcrypt|crypto|sanitize|escape|exec|eval|sql|query)\" \"$CLAUDE_FILE_PATH\" 2>/dev/null; then echo \"\"; echo \"⚠️  [Security Hook] Security-sensitive code detected in: $CLAUDE_FILE_PATH\"; echo \"   → Run the security-code-reviewer agent to verify this code:\"; echo \"   → Ask: Run security review on the recent changes\"; echo \"\"; fi'"
+					}
+				]
+			},
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if command -v gitleaks &>/dev/null; then cd \"$CLAUDE_PROJECT_DIR\" && gitleaks detect --source . --no-git --redact -v 2>&1 | grep -E \"(Secret|Finding|RuleID)\" | head -20 || true; else if [[ \"$CLAUDE_FILE_PATH\" =~ \\.(ts|tsx|js|json|env|yaml|yml)$ ]]; then grep -nEi \"(api[_-]?key|secret[_-]?key|password|token|credential|private[_-]?key)\\s*[=:]\\s*.{8,}\" \"$CLAUDE_FILE_PATH\" 2>/dev/null && echo \"⚠️  [Security Hook] Potential secret detected! Review before committing.\" || true; fi; fi'"
+					}
+				]
+			}
+		],
+		"PreToolUse": [
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if echo \"$CLAUDE_COMMAND\" | grep -qE \"git\\s+commit\"; then cd \"$CLAUDE_PROJECT_DIR\" && if command -v gitleaks &>/dev/null; then gitleaks detect --source . --staged --redact 2>&1; RESULT=$?; if [[ $RESULT -ne 0 ]]; then echo \"❌ [Security Hook] Secrets detected in staged files! Commit blocked.\"; exit 1; fi; fi; if [[ -f \"package.json\" ]] && grep -q \"\\\"lint\\\"\" package.json 2>/dev/null; then bun run lint 2>&1 || { echo \"❌ [Lint Hook] Linting failed! Fix errors before committing.\"; exit 1; }; fi; fi'"
+					}
+				]
+			},
+			{
+				"matcher": "Bash",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "bash -c 'if echo \"$CLAUDE_COMMAND\" | grep -qE \"rm\\s+-rf\\s+(/|~|\\$HOME|/Users|/home)\"; then echo \"❌ [Safety Hook] Blocked dangerous recursive delete on system directory\"; exit 1; fi'"
+					}
+				]
+			}
+		]
+	}
+}

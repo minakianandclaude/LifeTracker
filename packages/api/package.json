@@ -1,21 +1,25 @@
 {
-  "name": "@lifetracker/api",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "build": "bun build src/server.ts --outdir dist --target node",
-    "dev": "bun --watch src/server.ts",
-    "start": "bun dist/server.js",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@lifetracker/core": "workspace:*",
-    "fastify": "^4.25.0",
-    "@fastify/cors": "^8.5.0",
-    "zod": "^3.22.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "typescript": "^5.3.0"
-  }
+	"name": "@lifetracker/api",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"build": "bun build src/server.ts --outdir dist --target node",
+		"dev": "bun --watch src/server.ts",
+		"start": "bun dist/server.js",
+		"clean": "rm -rf dist",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"dependencies": {
+		"@lifetracker/core": "workspace:*",
+		"fastify": "^4.25.0",
+		"@fastify/cors": "^8.5.0",
+		"zod": "^3.22.0"
+	},
+	"devDependencies": {
+		"@types/node": "^25.0.9",
+		"typescript": "^5.3.0",
+		"vitest": "^4.0.17"
+	}
 }
