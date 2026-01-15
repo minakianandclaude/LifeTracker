@@ -77,7 +77,7 @@ lifetracker/
 │       └── vite.config.ts       # Vite config with API proxy
 ├── .env                         # DATABASE_URL, API_KEY, OLLAMA_URL
 ├── .env.example                 # Template for .env
-├── docker-compose.yml           # PostgreSQL + Ollama
+├── docker-compose.yml           # PostgreSQL + API + Web (with Traefik)
 ├── package.json                 # Bun workspaces root
 ├── turbo.json                   # Turborepo config
 └── tsconfig.json                # Root TypeScript config
@@ -105,9 +105,11 @@ bun run db:studio        # Open Prisma Studio
 cd packages/api && bun run dev    # API on port 3000
 cd packages/web && bun run dev    # Web on port 5173
 
-# Docker services
-docker compose up -d postgres     # Start PostgreSQL
-docker compose up -d ollama       # Start Ollama LLM
+# Docker services (development - local servers)
+docker compose up -d postgres     # Start PostgreSQL only
+
+# Docker services (full stack with Traefik)
+docker compose up -d              # Start all services (postgres, api, web)
 ```
 
 ## Architecture
@@ -431,9 +433,53 @@ All endpoints require `X-API-Key: dev-api-key-change-in-production` header.
 | `API_KEY` | API authentication key | `dev-api-key-change-in-production` |
 | `OLLAMA_URL` | Ollama LLM endpoint | `http://localhost:11434` |
 
+## Deployment (Traefik)
+
+The application can be deployed using Docker with Traefik for HTTPS routing.
+
+### Prerequisites
+
+- Traefik running with Docker provider and Let's Encrypt configured
+- External `traefik` Docker network created
+- DNS A record pointing to your server
+
+### Deploy
+
+```bash
+# Start all services
+docker compose up -d
+
+# Services will be available at:
+# https://lifetracker.maverickapplications.com
+```
+
+### Docker Services
+
+| Service | Container | Port | Description |
+|---------|-----------|------|-------------|
+| postgres | lifetracker-db | 5433:5432 | PostgreSQL database |
+| api | lifetracker-api | 3000 (internal) | Fastify API server |
+| web | lifetracker-web | 5173 (internal) | Vite dev server |
+
+### Traefik Labels
+
+The API and web services include Traefik labels for automatic routing:
+- API routes: `/api/*` and `/health` → lifetracker-api:3000
+- Web routes: `/*` → lifetracker-web:5173
+- TLS: Auto-provisioned via Let's Encrypt
+
+### Environment Variables in Docker
+
+The API container uses these environment variables:
+- `DATABASE_URL`: Points to `postgres:5432` (internal Docker network)
+- `API_KEY`: From host `.env` or default
+- `OLLAMA_URL`: Points to `host.docker.internal:11434` for local Ollama
+
 ## Important Notes
 
 - **Bun Path**: Bun is installed at `~/.bun/bin/bun`. Use `PATH="$HOME/.bun/bin:$PATH"` if needed.
 - **Docker Required**: PostgreSQL runs in Docker. Start with `docker compose up -d postgres`.
+- **PostgreSQL Port**: Uses port 5433 (not 5432) to avoid conflicts with other PostgreSQL instances.
 - **Inbox List**: System list with `is_system=true`, `is_deletable=false`. Created by seed script.
 - **Environment Symlinks**: Both `packages/core/.env` and `packages/api/.env` are symlinks to root `.env`.
+- **Ollama**: Not included in docker-compose; expects local Ollama installation with `gpt-oss:20b` model.
