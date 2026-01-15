@@ -8,5 +8,6 @@ export default defineConfig({
 		exclude: ["**/node_modules/**", "**/e2e/**", "**/*.test.ts"],
 		testTimeout: 30000,
 		hookTimeout: 30000,
+		passWithNoTests: true,
 	},
 });
