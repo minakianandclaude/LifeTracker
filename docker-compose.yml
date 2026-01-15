@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: lifetracker_dev
       POSTGRES_DB: lifetracker
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,21 +15,60 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
-  ollama:
-    image: ollama/ollama
-    container_name: lifetracker-ollama
-    ports:
-      - "11434:11434"
+  api:
+    image: oven/bun:1
+    container_name: lifetracker-api
+    working_dir: /app/packages/api
+    command: bun run --watch src/server.ts
     volumes:
-      - ollama_data:/root/.ollama
-    # Uncomment if you have GPU:
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - capabilities: [gpu]
+      - ./:/app
+    environment:
+      - DATABASE_URL=postgresql://lifetracker:lifetracker_dev@postgres:5432/lifetracker
+      - API_KEY=${API_KEY:-dev-api-key-change-in-production}
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lifetracker-api.rule=Host(`lifetracker.maverickapplications.com`) && (PathPrefix(`/api`) || PathPrefix(`/health`))"
+      - "traefik.http.routers.lifetracker-api.priority=100"
+      - "traefik.http.routers.lifetracker-api.entrypoints=websecure"
+      - "traefik.http.routers.lifetracker-api.tls=true"
+      - "traefik.http.routers.lifetracker-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lifetracker-api.loadbalancer.server.port=3000"
+
+  web:
+    image: oven/bun:1
+    container_name: lifetracker-web
+    working_dir: /app/packages/web
+    command: bun run dev --host
+    volumes:
+      - ./:/app
+    environment:
+      - VITE_API_URL=https://lifetracker.maverickapplications.com
+    depends_on:
+      - api
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lifetracker-web.rule=Host(`lifetracker.maverickapplications.com`)"
+      - "traefik.http.routers.lifetracker-web.entrypoints=websecure"
+      - "traefik.http.routers.lifetracker-web.tls=true"
+      - "traefik.http.routers.lifetracker-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lifetracker-web.loadbalancer.server.port=5173"
+
+networks:
+  internal:
+  traefik:
+    external: true
 
 volumes:
   postgres_data:
-  ollama_data:
