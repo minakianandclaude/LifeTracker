@@ -14,7 +14,8 @@ This document outlines the phased development plan for the LifeTracker MVP (Mini
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| [Phase 1](#phase-1-database-schema-extension) | Database Schema Extension | Pending |
+| [Phase 1](#phase-1-database-schema-extension) | Database Schema Extension | Complete |
+| [Pre-Phase 2](#pre-phase-2-fix-typescript-errors) | Fix TypeScript Errors | Pending |
 | [Phase 2](#phase-2-cicd-pipeline) | CI/CD Pipeline | Pending |
 | [Phase 3](#phase-3-authentication-system) | Authentication System (JWT + API Key) | Pending |
 | [Phase 4](#phase-4-list-management) | List Management (Full CRUD) | Pending |
@@ -245,6 +246,37 @@ bunx prisma migrate reset --skip-seed
 - [ ] `bun run db:generate` succeeds and types are available
 - [ ] All existing API endpoints still function (regression check)
 - [ ] Code passes type-check: `bunx tsc --noEmit`
+
+---
+
+## Pre-Phase 2: Fix TypeScript Errors
+
+### Goal
+Fix pre-existing TypeScript errors in the API package before establishing CI/CD pipeline.
+
+### Background
+During Phase 1 verification, type-checking revealed errors in `packages/api/src/services/llm.ts` that predate MVP development. These must be fixed before Phase 2 establishes CI with mandatory type-check passing.
+
+### Task List
+
+| # | Task | Status |
+|---|------|--------|
+| P2.1 | Fix type errors in `packages/api/src/services/llm.ts` (lines 38, 146) | Pending |
+| P2.2 | Verify `bunx tsc --noEmit` passes for all packages | Pending |
+
+### Errors to Fix
+
+```
+src/services/llm.ts(38,11): error TS2322: Type 'unknown' is not assignable to type 'OllamaResponse'.
+src/services/llm.ts(146,22): error TS18046: 'data' is of type 'unknown'.
+```
+
+### Done Criteria
+
+- [ ] `bunx tsc --noEmit` passes in packages/api
+- [ ] `bunx tsc --noEmit` passes in packages/core
+- [ ] `bunx tsc --noEmit` passes in packages/web
+- [ ] No regression in existing functionality
 
 ---
 
