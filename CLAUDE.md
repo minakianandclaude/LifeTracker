@@ -6,9 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LifeTracker is a personal productivity application with voice-first natural language input. Users speak commands via iOS/macOS Shortcuts, which are processed by a self-hosted LLM to extract tasks, expenses, workouts, etc.
 
-**Current Status**: PoC COMPLETE. All 7 phases finished. Ready for daily use.
+**Current Status**: PoC COMPLETE. MVP development in progress on `mvp` branch.
 
 ## Development Progress
+
+### PoC (Complete - on `main`)
 
 | Phase | Status | PR |
 |-------|--------|-----|
@@ -20,10 +22,61 @@ LifeTracker is a personal productivity application with voice-first natural lang
 | Phase 6: iOS Shortcut | ✅ Complete | #8 merged |
 | Phase 7: Integration Testing | ✅ Complete | #9 merged |
 
-### Current Branch Strategy
-- Always create feature branches off `main`: `feature/phase-N-description`
-- Pull latest `main` before starting new phase
-- Create PR after each phase completion
+### MVP (In Progress - on `mvp` branch)
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 1 | Database Schema Extension | Pending |
+| Phase 2 | CI/CD Pipeline | Pending |
+| Phase 3 | Authentication System (JWT + API Key) | Pending |
+| Phase 4 | List Management (Full CRUD) | Pending |
+| Phase 5 | Tags System | Pending |
+| Phase 6 | Enhanced Task Features | Pending |
+| Phase 7 | Full LLM Parsing | Pending |
+| Phase 8 | Responsive UI | Pending |
+| Phase 9 | macOS Shortcut Integration | Pending |
+| Phase 10 | Integration Testing & Polish | Pending |
+
+See `docs/mvp-development-plan.md` for detailed phase breakdown and Done criteria.
+
+## Branch Strategy
+
+### Branch Structure
+
+```
+main (PoC complete, production-stable)
+  │
+  └── mvp (long-lived MVP development branch)
+        ├── mvp/phase-1-database
+        ├── mvp/phase-2-cicd
+        ├── mvp/phase-3-auth
+        └── ... (each phase branches off mvp)
+```
+
+### Workflow
+
+**Starting a new phase:**
+```bash
+git checkout mvp
+git pull origin mvp
+git checkout -b mvp/phase-N-description
+```
+
+**Completing a phase:**
+```bash
+git push -u origin mvp/phase-N-description
+gh pr create --base mvp --title "Phase N: Description"
+# After review, merge PR into mvp
+```
+
+**When MVP is complete:**
+- Merge `mvp` → `main`
+- Tag release: `git tag -a v1.0.0 -m "MVP Release"`
+
+### Branch Naming Convention
+- MVP phase branches: `mvp/phase-N-description` (e.g., `mvp/phase-1-database`)
+- Bug fixes during MVP: `mvp/fix-description`
+- Post-MVP features: `feature/description` (off `main`)
 
 ## Tech Stack
 
@@ -188,7 +241,6 @@ iOS Shortcut (Dictate Text) → POST /api/voice → LLM parses intent → Module
 
 ### Git Workflow
 
-- **Branch Naming**: `feature/`, `fix/`, `refactor/`, `docs/` prefixes (e.g., `feature/task-crud`)
 - **Commit Messages**: Use conventional commits format:
   - `feat:` new feature
   - `fix:` bug fix
@@ -197,8 +249,10 @@ iOS Shortcut (Dictate Text) → POST /api/voice → LLM parses intent → Module
   - `docs:` documentation changes
   - `chore:` maintenance tasks
 - **No AI Attribution**: Do not include "Co-Authored-By: Claude" or any AI attribution in commit messages or pull request descriptions
-- **Pull Requests**: Include description, testing notes, and link to related issues. Do not include AI attribution or "Generated with Claude" footers
+- **Pull Requests**: Include description, testing notes, and link to related issues. Do not include AI attribution or "Generated with Claude" footers. PRs for MVP phases target `mvp` branch, not `main`.
 - **Squash Merges**: Preferred for feature branches to maintain clean history
+
+See [Branch Strategy](#branch-strategy) section for branch naming and workflow details.
 
 ### Security Practices
 
@@ -382,6 +436,7 @@ Phase 4B (UI Components):
 | `docs/tasks-module-spec.md` | Tasks module requirements and entity definitions |
 | `docs/development-plan.md` | High-level development phases and task tracking |
 | `docs/poc-development-plan.md` | Detailed PoC implementation steps with code examples |
+| `docs/mvp-development-plan.md` | **MVP phases, Done criteria, CI/CD pipeline** |
 | `docs/ios-shortcut-setup.md` | iOS Shortcut setup guide for voice input |
 
 ## Quick Start (Development)
