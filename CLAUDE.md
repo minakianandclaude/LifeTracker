@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LifeTracker is a personal productivity application with voice-first natural language input. Users speak commands via iOS/macOS Shortcuts, which are processed by a self-hosted LLM to extract tasks, expenses, workouts, etc.
 
-**Current Status**: PoC development in progress. Phases 1-4 complete, Phase 5 (LLM Integration) is next.
+**Current Status**: PoC development in progress. Phases 1-5 complete, Phase 6 (iOS Shortcut) is next.
 
 ## Development Progress
 
@@ -16,8 +16,8 @@ LifeTracker is a personal productivity application with voice-first natural lang
 | Phase 2: Database Setup | ✅ Complete | #2 merged |
 | Phase 3: API Endpoints | ✅ Complete | #3 pending |
 | Phase 4: Frontend UI | ✅ Complete | #4 pending |
-| Phase 5: LLM Integration | 🔜 Next | - |
-| Phase 6: iOS Shortcut | ⏳ Pending | - |
+| Phase 5: LLM Integration | ✅ Complete | - |
+| Phase 6: iOS Shortcut | 🔜 Next | - |
 | Phase 7: Integration Testing | ⏳ Pending | - |
 
 ### Current Branch Strategy
@@ -59,7 +59,10 @@ lifetracker/
 │   │   │   │   └── auth.ts      # API key verification
 │   │   │   ├── routes/
 │   │   │   │   ├── tasks.ts     # Task CRUD + toggle complete
-│   │   │   │   └── lists.ts     # List read endpoints
+│   │   │   │   ├── lists.ts     # List read endpoints
+│   │   │   │   └── voice.ts     # Voice input with LLM parsing
+│   │   │   ├── services/
+│   │   │   │   └── llm.ts       # Ollama LLM client + fallback
 │   │   │   └── schemas/
 │   │   │       └── task.ts      # Zod validation schemas
 │   │   └── .env -> ../../.env   # Symlink to root .env
@@ -424,6 +427,8 @@ All endpoints require `X-API-Key: dev-api-key-change-in-production` header.
 | POST | `/api/tasks/:id/complete` | Toggle completion |
 | GET | `/api/lists` | List all lists |
 | GET | `/api/lists/:id` | Get list with tasks |
+| POST | `/api/voice` | Process voice input with LLM |
+| GET | `/api/voice/health` | Check LLM availability |
 
 ## Environment Variables
 

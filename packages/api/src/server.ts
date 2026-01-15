@@ -2,6 +2,8 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { taskRoutes } from './routes/tasks';
 import { listRoutes } from './routes/lists';
+import { voiceRoutes } from './routes/voice';
+import { checkLLMHealth } from './services/llm';
 
 const server = Fastify({
   logger: true,
@@ -14,12 +16,21 @@ server.register(cors, {
 
 // Health check (no auth required)
 server.get('/health', async () => {
-  return { status: 'ok', timestamp: new Date().toISOString() };
+  const llmHealthy = await checkLLMHealth();
+  return {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    services: {
+      api: 'healthy',
+      llm: llmHealthy ? 'healthy' : 'degraded',
+    },
+  };
 });
 
 // Register routes
 server.register(taskRoutes, { prefix: '/api' });
 server.register(listRoutes, { prefix: '/api' });
+server.register(voiceRoutes, { prefix: '/api' });
 
 // Error handler
 server.setErrorHandler((error, request, reply) => {
