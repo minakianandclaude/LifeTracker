@@ -22,13 +22,18 @@ services:
     image: oven/bun:1
     container_name: lifetracker-api
     working_dir: /app/packages/api
-    command: bun run --watch src/server.ts
+    command: sh scripts/start.sh
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./:/app
     environment:
       - DATABASE_URL=postgresql://lifetracker:lifetracker_dev@postgres:5432/lifetracker
       - API_KEY=${API_KEY:-dev-api-key-change-in-production}
-      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+      - OLLAMA_URL=http://host.docker.internal:11434
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,6 +42,7 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.lifetracker-api.rule=Host(`lifetracker.maverickapplications.com`) && (PathPrefix(`/api`) || PathPrefix(`/health`))"
       - "traefik.http.routers.lifetracker-api.priority=100"
       - "traefik.http.routers.lifetracker-api.entrypoints=websecure"
@@ -49,6 +55,7 @@ services:
     container_name: lifetracker-web
     working_dir: /app/packages/web
     command: bun run dev --host
+    restart: unless-stopped
     volumes:
       - ./:/app
     environment:
@@ -59,6 +66,7 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.lifetracker-web.rule=Host(`lifetracker.maverickapplications.com`)"
       - "traefik.http.routers.lifetracker-web.entrypoints=websecure"
       - "traefik.http.routers.lifetracker-web.tls=true"

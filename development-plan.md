@@ -499,14 +499,14 @@ const intentRouter = buildIntentRouter(modules);
 #### Task List
 | # | Task | Parallel Group | Status |
 |---|------|----------------|--------|
-| 5.1 | Start Ollama and pull gpt-oss-20b model | A | ✅ |
-| 5.2 | Create LLM client service (prompt, parse, fallback) | B | ✅ |
-| 5.3 | Create LLM health check function | B | ✅ |
-| 5.4 | Create voice input endpoint (/api/voice) | C | ✅ |
-| 5.5 | Register voice routes in server | C | ✅ |
-| 5.6 | Update /health to include LLM status | C | ✅ |
-| 5.7 | Test voice endpoint with various inputs | D | ✅ |
-| 5.8 | Test fallback when LLM unavailable | D | ✅ |
+| 5.1 | Start Ollama and pull gpt-oss-20b model | A | ☐ |
+| 5.2 | Create LLM client service (prompt, parse, fallback) | B | ☐ |
+| 5.3 | Create LLM health check function | B | ☐ |
+| 5.4 | Create voice input endpoint (/api/voice) | C | ☐ |
+| 5.5 | Register voice routes in server | C | ☐ |
+| 5.6 | Update /health to include LLM status | C | ☐ |
+| 5.7 | Test voice endpoint with various inputs | D | ☐ |
+| 5.8 | Test fallback when LLM unavailable | D | ☐ |
 
 **Parallelization:** 5.1 (model download) runs while 5.2-5.3 (code) are written
 
