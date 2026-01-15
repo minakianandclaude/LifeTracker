@@ -146,7 +146,7 @@ Updated Prisma schema with migrations applied, ready for new features.
 | # | Task | Status |
 |---|------|--------|
 | 1B.1 | Create Prisma migration for new models | Pending |
-| 1B.2 | Update seed script (create default admin user) | Pending |
+| 1B.2 | Update seed script (create default admin user: admin/admin123) | Pending |
 | 1B.3 | Run migration and verify with Prisma Studio | Pending |
 
 ### Data Model Additions
@@ -206,7 +206,7 @@ model TaskTag {
 | Apply migration | `bun run db:push` | Tables created in database |
 | Verify User table | Prisma Studio | User table visible with correct columns |
 | Verify Tag tables | Prisma Studio | Tag and TaskTag tables visible |
-| Seed admin user | `bun run db:seed` | Admin user created |
+| Seed admin user | `bun run db:seed` | Admin user created (username: admin, password: admin123 - dev only) |
 
 ### Migration Rollback Strategy
 
