@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 LifeTracker is a personal productivity application with voice-first natural language input. Users speak commands via iOS/macOS Shortcuts, which are processed by a self-hosted LLM to extract tasks, expenses, workouts, etc.
 
-**Current Status**: PoC development in progress. Phases 1-4 complete, Phase 5 (LLM Integration) is next.
+**Current Status**: PoC development in progress. Phases 1-6 complete, Phase 7 (Integration Testing) is next.
 
 ## Development Progress
 
@@ -14,11 +14,11 @@ LifeTracker is a personal productivity application with voice-first natural lang
 |-------|--------|-----|
 | Phase 1: Project Scaffold | ✅ Complete | #1 merged |
 | Phase 2: Database Setup | ✅ Complete | #2 merged |
-| Phase 3: API Endpoints | ✅ Complete | #3 pending |
-| Phase 4: Frontend UI | ✅ Complete | #4 pending |
-| Phase 5: LLM Integration | 🔜 Next | - |
-| Phase 6: iOS Shortcut | ⏳ Pending | - |
-| Phase 7: Integration Testing | ⏳ Pending | - |
+| Phase 3: API Endpoints | ✅ Complete | #3 merged |
+| Phase 4: Frontend UI | ✅ Complete | #5 merged |
+| Phase 5: LLM Integration | ✅ Complete | #7 merged |
+| Phase 6: iOS Shortcut | ✅ Complete | #8 merged |
+| Phase 7: Integration Testing | 🔜 Next | - |
 
 ### Current Branch Strategy
 - Always create feature branches off `main`: `feature/phase-N-description`
@@ -270,7 +270,7 @@ This project uses 15 specialized agents in `.claude/agents/` to enable parallel 
 ```
 Main Instance (Orchestrator)
     │
-    ├── Reads development-plan.md
+    ├── Reads docs/development-plan.md
     ├── Tracks progress via TodoWrite
     ├── Dispatches parallel agents for independent tasks
     ├── Reviews results and coordinates integration
@@ -314,7 +314,7 @@ Main Instance (Orchestrator)
 
 ### Parallel Development Example
 
-Per `development-plan.md`, many tasks can be parallelized:
+Per `docs/development-plan.md`, many tasks can be parallelized:
 
 ```
 Phase 1 (Project Scaffold):
@@ -378,10 +378,11 @@ Phase 4B (UI Components):
 
 | Document | Purpose |
 |----------|---------|
-| `life-tracker-spec.md` | Full project specification and architecture |
-| `tasks-module-spec.md` | Tasks module requirements and entity definitions |
-| `development-plan.md` | High-level development phases and task tracking |
-| `poc-development-plan.md` | Detailed PoC implementation steps with code examples |
+| `docs/life-tracker-spec.md` | Full project specification and architecture |
+| `docs/tasks-module-spec.md` | Tasks module requirements and entity definitions |
+| `docs/development-plan.md` | High-level development phases and task tracking |
+| `docs/poc-development-plan.md` | Detailed PoC implementation steps with code examples |
+| `docs/ios-shortcut-setup.md` | iOS Shortcut setup guide for voice input |
 
 ## Quick Start (Development)
 

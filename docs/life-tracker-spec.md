@@ -4,7 +4,7 @@
 
 Life Tracker is a personal productivity application designed to make tracking daily life easy and intuitive. The core differentiator is **natural language input** via voice, processed through a self-hosted LLM, enabling rapid capture of tasks, expenses, workouts, and more.
 
-**Domain:** `life.maverickapplications.com`
+**Domain:** `lifetracker.maverickapplications.com`
 
 ---
 
@@ -390,7 +390,7 @@ See individual module specs for detailed extraction rules:
 [Returns transcribed text string]
        │
        ▼
-[POST to https://life.maverickapplications.com/api/voice]
+[POST to https://lifetracker.maverickapplications.com/api/voice]
 [Header: X-API-Key: <api_key>]
 [Body: { "input": "<transcribed_text>" }]
        │
