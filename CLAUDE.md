@@ -27,7 +27,7 @@ LifeTracker is a personal productivity application with voice-first natural lang
 | Phase | Description | Status |
 |-------|-------------|--------|
 | Phase 1 | Database Schema Extension | ✅ Complete |
-| Phase 2 | CI/CD Pipeline | Pending |
+| Phase 2 | CI/CD Pipeline | ✅ Complete |
 | Phase 3 | Authentication System (JWT + API Key) | Pending |
 | Phase 4 | List Management (Full CRUD) | Pending |
 | Phase 5 | Tags System | Pending |
@@ -36,6 +36,7 @@ LifeTracker is a personal productivity application with voice-first natural lang
 | Phase 8 | Responsive UI | Pending |
 | Phase 9 | macOS Shortcut Integration | Pending |
 | Phase 10 | Integration Testing & Polish | Pending |
+| Phase 11 | Deployment Automation | Pending |
 
 See `docs/mvp-development-plan.md` for detailed phase breakdown and Done criteria.
 
