@@ -34,10 +34,10 @@ Personal voice AI layer for productivity tasks, designed to work alongside Siri.
 │                    ┌──────────────────────────────┼───────┐     │
 │                    │              │               │       │     │
 │                    ▼              ▼               ▼       ▼     │
-│              ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────┐  │
-│              │  Plane   │  │  Home    │  │ Finance  │  │ ...│  │
-│              │  (Tasks) │  │ Assistant│  │ Tracker  │  │    │  │
-│              └──────────┘  └──────────┘  └──────────┘  └────┘  │
+│              ┌──────────┐  ┌──────────┐  ┌──────────┐         │
+│              │  Plane   │  │ Firefly  │  │   wger   │         │
+│              │  (Tasks) │  │ (Finance)│  │ (Fitness)│         │
+│              └──────────┘  └──────────┘  └──────────┘         │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -130,12 +130,12 @@ Each external service gets an adapter that translates parsed intents to API call
 │                    Service Adapters                              │
 │                                                                  │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │  PlaneAdapter   │  │  HomeAssistant  │  │  CustomAdapter  │ │
-│  │                 │  │    Adapter      │  │                 │ │
-│  │  • create_task  │  │  • turn_on      │  │  • log_expense  │ │
-│  │  • list_tasks   │  │  • turn_off     │  │  • log_workout  │ │
-│  │  • complete     │  │  • set_temp     │  │  • add_note     │ │
-│  │                 │  │  • run_scene    │  │                 │ │
+│  │  PlaneAdapter   │  │ FireflyAdapter  │  │   wgerAdapter   │ │
+│  │                 │  │                 │  │                 │ │
+│  │  • create_task  │  │  • withdrawal   │  │  • log_set      │ │
+│  │  • list_tasks   │  │  • deposit      │  │  • log_weight   │ │
+│  │  • complete     │  │  • transfer     │  │  • start_workout│ │
+│  │                 │  │  • query        │  │                 │ │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
 │                                                                  │
 │  Interface:                                                      │
@@ -285,12 +285,23 @@ List available services and their capabilities.
       ]
     },
     {
-      "name": "home",
-      "description": "Home automation",
-      "actions": ["turn_on", "turn_off", "set_temperature"],
+      "name": "firefly",
+      "description": "Finance and expense tracking",
+      "actions": ["create_transaction", "query_spending"],
       "examples": [
-        "turn on living room lights",
-        "set thermostat to 72"
+        "spent 45 on groceries",
+        "got paid 3000",
+        "how much did I spend on food"
+      ]
+    },
+    {
+      "name": "wger",
+      "description": "Fitness and workout tracking",
+      "actions": ["log_set", "log_weight", "start_workout"],
+      "examples": [
+        "log bench press 135 for 10",
+        "weight is 180 pounds",
+        "did 3 sets of squats"
       ]
     }
   ]
@@ -322,7 +333,7 @@ Rules:
 
 Output JSON format:
 {
-  "service": "plane|home|finance|unknown",
+  "service": "plane|firefly|wger|unknown",
   "action": "create_task|complete_task|...",
   "confidence": 0.0-1.0,
   "data": { ... service-specific fields ... }
@@ -490,11 +501,25 @@ Now: **Press Action Button → Speak → Task Created**
 
 ---
 
+## Core Services
+
+The Voice Bridge integrates with three self-hosted applications:
+
+| Service | Application | Purpose | API Auth |
+|---------|-------------|---------|----------|
+| **plane** | Plane.so | Tasks & projects | `X-API-Key` header |
+| **firefly** | Firefly III | Finance tracking | `Bearer` token |
+| **wger** | wger | Fitness tracking | JWT token |
+
+See `docs/voice-bridge-plan.md` for detailed API specifications for each service.
+
+---
+
 ## Extensibility: Future Services
 
 The adapter pattern makes adding new services straightforward:
 
-### Example: Home Assistant Adapter
+### Example: Home Assistant Adapter (Future)
 
 ```typescript
 const homeAssistantAdapter: ServiceAdapter = {
@@ -504,20 +529,6 @@ const homeAssistantAdapter: ServiceAdapter = {
   async execute(action, data) {
     // Map voice commands to Home Assistant API calls
     // "turn on living room lights" → POST /api/services/light/turn_on
-  }
-};
-```
-
-### Example: Finance Tracker Adapter
-
-```typescript
-const financeAdapter: ServiceAdapter = {
-  name: 'finance',
-  actions: ['log_expense', 'log_income'],
-
-  async execute(action, data) {
-    // "spent 50 dollars on groceries"
-    // → Log to your finance tracking system
   }
 };
 ```
@@ -596,11 +607,14 @@ volumes:
 | Router | Fastify/Bun API | Request handling, service routing |
 | Brain | Ollama + gpt-oss-20b | Intent classification |
 | Tasks | Plane.so | Task/project management |
+| Finance | Firefly III | Expense/income tracking |
+| Fitness | wger | Workout/weight logging |
 | Future | Home Assistant, etc. | Extensible integrations |
 
 This architecture gives you:
 - **Your voice, your AI, your servers** - Complete control
 - **Siri coexistence** - Best of both worlds
+- **Three core services** - Tasks, finance, fitness out of the box
 - **Extensibility** - Add services as needed
-- **Simplicity** - Plane handles the complex UI
+- **No custom UI** - Each service has its own polished interface
 - **Offline resilience** - Fallback to Notes app
