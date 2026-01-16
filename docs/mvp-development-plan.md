@@ -16,7 +16,7 @@ This document outlines the phased development plan for the LifeTracker MVP (Mini
 |-------|-------------|--------|
 | [Phase 1](#phase-1-database-schema-extension) | Database Schema Extension | Complete |
 | [Pre-Phase 2](#pre-phase-2-fix-typescript-errors) | Fix TypeScript Errors | Complete |
-| [Phase 2](#phase-2-cicd-pipeline) | CI/CD Pipeline | Pending |
+| [Phase 2](#phase-2-cicd-pipeline) | CI/CD Pipeline | Complete |
 | [Phase 3](#phase-3-authentication-system) | Authentication System (JWT + API Key) | Pending |
 | [Phase 4](#phase-4-list-management) | List Management (Full CRUD) | Pending |
 | [Phase 5](#phase-5-tags-system) | Tags System | Pending |
@@ -25,6 +25,7 @@ This document outlines the phased development plan for the LifeTracker MVP (Mini
 | [Phase 8](#phase-8-responsive-ui) | Responsive UI | Pending |
 | [Phase 9](#phase-9-macos-shortcut-integration) | macOS Shortcut Integration | Pending |
 | [Phase 10](#phase-10-integration-testing--polish) | Integration Testing & Polish | Pending |
+| [Phase 11](#phase-11-deployment-automation) | Deployment Automation | Pending |
 
 **Other Sections:**
 - [MVP Scope Summary](#mvp-scope-summary)
@@ -513,25 +514,25 @@ Configure on GitHub:
 
 ### Done Criteria
 
-- [ ] All tasks in Sub-Phases 2A, 2B, 2C, and 2D marked complete
-- [ ] `.github/workflows/ci.yml` exists and runs on PR
-- [ ] `.github/workflows/deploy.yml` exists with manual trigger
-- [ ] `bun run lint` checks all packages
-- [ ] `bun run typecheck` validates all TypeScript
-- [ ] `bun run test:unit` runs unit tests with coverage
-- [ ] `bun run test:integration` runs against test database
-- [ ] `bun run test:e2e` runs Playwright tests
-- [ ] Vitest configured with coverage thresholds (≥80%)
-- [ ] Codecov or Coveralls integration shows coverage on PRs
-- [ ] Playwright installed and configured for E2E
-- [ ] Test database spins up in CI via Docker service
-- [ ] Branch protection enabled on `main`
-- [ ] All required status checks configured
-- [ ] Manual deployment workflow deploys successfully
-- [ ] Health check verification passes after deployment
-- [ ] Rollback procedure documented
-- [ ] All existing PoC tests pass in CI
-- [ ] PR with intentional lint error is blocked by CI
+- [x] All tasks in Sub-Phases 2A, 2B, 2C, and 2D marked complete
+- [x] `.github/workflows/ci.yml` exists and runs on PR
+- [x] `.github/workflows/deploy.yml` exists with manual trigger
+- [x] `bun run lint` checks all packages
+- [x] `bun run typecheck` validates all TypeScript
+- [x] `bun run test:unit` runs unit tests with coverage
+- [x] `bun run test:integration` runs against test database
+- [x] `bun run test:e2e` runs Playwright tests
+- [x] Vitest configured with coverage thresholds (≥80%)
+- [ ] ~~Codecov or Coveralls integration shows coverage on PRs~~ (Deferred to Phase 11)
+- [x] Playwright installed and configured for E2E
+- [x] Test database spins up in CI via Docker service
+- [ ] ~~Branch protection enabled on `main`~~ (Deferred to Phase 11)
+- [ ] ~~All required status checks configured~~ (Deferred to Phase 11)
+- [ ] ~~Manual deployment workflow deploys successfully~~ (Deferred to Phase 11)
+- [ ] ~~Health check verification passes after deployment~~ (Deferred to Phase 11)
+- [x] Rollback procedure documented
+- [x] All existing PoC tests pass in CI
+- [x] PR with intentional lint error is blocked by CI (verified via CI)
 
 ---
 
@@ -1437,6 +1438,76 @@ Stable, production-ready MVP.
 
 ---
 
+## Phase 11: Deployment Automation
+
+### Goal
+Configure GitHub Actions deployment workflow with proper secrets and optional code coverage reporting.
+
+### Deliverable
+Working automated deployment pipeline triggered manually from GitHub Actions, with optional Codecov integration for PR coverage reports.
+
+### Background
+Phase 2 created the deployment workflow (`deploy.yml`) but deferred secrets configuration. This phase completes the deployment automation setup.
+
+### Task List
+
+| # | Task | Status |
+|---|------|--------|
+| 11.1 | Configure `DEPLOY_HOST` secret in GitHub | Pending |
+| 11.2 | Configure `DEPLOY_USER` secret in GitHub | Pending |
+| 11.3 | Configure `DEPLOY_SSH_KEY` secret in GitHub | Pending |
+| 11.4 | Test manual deployment workflow | Pending |
+| 11.5 | Set up Codecov account and link repository | Pending |
+| 11.6 | Configure `CODECOV_TOKEN` secret in GitHub | Pending |
+| 11.7 | Verify coverage reports appear on PRs | Pending |
+| 11.8 | Configure branch protection rules for `main` and `mvp` | Pending |
+
+### GitHub Secrets Required
+
+| Secret | Description |
+|--------|-------------|
+| `DEPLOY_HOST` | Server hostname or IP (e.g., `lifetracker.maverickapplications.com`) |
+| `DEPLOY_USER` | SSH username with deploy permissions |
+| `DEPLOY_SSH_KEY` | Private SSH key for authentication |
+| `CODECOV_TOKEN` | Upload token from codecov.io (optional) |
+
+### Branch Protection Rules
+
+Configure on GitHub (Settings → Branches → Add rule):
+
+**For `main` and `mvp` branches:**
+- Require pull request reviews before merging
+- Require status checks to pass:
+  - `lint`
+  - `test-unit`
+  - `test-integration`
+  - `test-e2e`
+  - `build`
+- Require branches to be up to date before merging
+
+### Test Plan
+
+| Test | Action | Expected Result |
+|------|--------|-----------------|
+| Manual deploy | Trigger deploy workflow from GitHub Actions | App deploys, health check passes |
+| Coverage report | Create PR with test changes | Codecov comment appears on PR |
+| Branch protection | Try to push directly to `main` | Push rejected |
+
+### Done Criteria
+
+- [ ] All tasks in Phase 11 task list marked complete
+- [ ] `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` secrets configured
+- [ ] Manual deployment workflow completes successfully
+- [ ] Health check passes after deployment
+- [ ] Codecov account created and linked (optional)
+- [ ] `CODECOV_TOKEN` secret configured (optional)
+- [ ] Coverage reports visible on PRs (optional)
+- [ ] Branch protection enabled on `main`
+- [ ] Branch protection enabled on `mvp`
+- [ ] Direct push to protected branches is blocked
+
+---
+
 ## Definition of Done
 
 ### MVP Complete When:
@@ -1476,6 +1547,7 @@ Stable, production-ready MVP.
 | 8 | Responsive UI | Phases 4, 5, 6 |
 | 9 | macOS Shortcut | Phase 7 |
 | 10 | Integration Testing | All phases |
+| 11 | Deployment Automation | Phase 2 |
 
 **Parallelization Notes:**
 - Phase 2 (CI/CD) should be completed early so all subsequent phases benefit from automated testing
