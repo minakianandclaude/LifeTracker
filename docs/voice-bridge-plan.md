@@ -568,6 +568,50 @@ Output: {"service":"wger","action":"log_set","confidence":0.90,"data":{"exercise
 
 ---
 
+## LLM Model Selection
+
+The Voice Bridge requires a local LLM for intent classification and entity extraction. This is a relatively simple task that doesn't require large models.
+
+### Recommended Models
+
+| Model | Size | VRAM (Q5) | Strengths | Ollama Command |
+|-------|------|-----------|-----------|----------------|
+| **Qwen 2.5 7B** | 7B | ~5GB | Best JSON extraction, technical accuracy | `ollama pull qwen2.5:7b-instruct` |
+| **Hermes 2 Pro 7B** | 7B | ~5GB | 91% function calling accuracy | `ollama pull adrienbrault/nous-hermes2pro:Q5_K_M` |
+| **Phi-4 Mini** | 3.8B | ~2.5GB | Faster inference, good for limited VRAM | `ollama pull phi4-mini:3.8b-instruct` |
+| **Mistral 7B v0.3** | 7B | ~5GB | Fast, native tool support | `ollama pull mistral:7b-instruct` |
+
+### Selection Guide
+
+- **12GB+ VRAM**: Use Qwen 2.5 7B (best accuracy)
+- **8GB VRAM**: Use Qwen 2.5 7B at Q4 quantization or Phi-4 Mini
+- **Speed priority**: Use Phi-4 Mini (2x faster than 7B models)
+
+### Ollama Structured Output
+
+Use Ollama's native structured output feature for reliable JSON:
+
+```typescript
+const response = await ollama.chat({
+  model: 'qwen2.5:7b-instruct',
+  messages: [{ role: 'user', content: voiceInput }],
+  format: {
+    type: 'object',
+    properties: {
+      service: { type: 'string', enum: ['plane', 'firefly', 'wger', 'unknown'] },
+      action: { type: 'string' },
+      confidence: { type: 'number' },
+      data: { type: 'object' }
+    },
+    required: ['service', 'action', 'confidence', 'data']
+  }
+});
+```
+
+This constrains output to valid JSON matching your schema - no parsing failures.
+
+---
+
 ## Environment Variables
 
 ```bash
@@ -576,9 +620,9 @@ PORT=3000
 API_KEY=your-voice-bridge-api-key
 LOG_LEVEL=info
 
-# LLM
+# LLM (choose one model from recommendations above)
 OLLAMA_URL=http://localhost:11434
-OLLAMA_MODEL=gpt-oss:20b
+OLLAMA_MODEL=qwen2.5:7b-instruct
 
 # Plane
 PLANE_URL=https://plane.yourdomain.com

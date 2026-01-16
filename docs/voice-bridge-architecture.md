@@ -28,7 +28,7 @@ Personal voice AI layer for productivity tasks, designed to work alongside Siri.
 │  │                    (Fastify on Bun)                       │  │
 │  │                                                           │  │
 │  │   POST /voice ─────▶ LLM Intent Parser ─────▶ Router     │  │
-│  │                      (Ollama/gpt-oss)          │          │  │
+│  │                      (Ollama/Qwen2.5)          │          │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                                                   │              │
 │                    ┌──────────────────────────────┼───────┐     │
@@ -102,7 +102,7 @@ Minimal API that receives voice input and routes to appropriate service.
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    LLM Intent Parser                             │
-│                    (Ollama + gpt-oss-20b)                        │
+│                    (Ollama + Qwen 2.5 7B or alternatives)        │
 │                                                                  │
 │  Input: "Add buy milk to my shopping list priority high"         │
 │                                                                  │
@@ -120,6 +120,17 @@ Minimal API that receives voice input and routes to appropriate service.
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**Recommended Models** (via Ollama):
+
+| Model | Size | VRAM | Best For |
+|-------|------|------|----------|
+| **Qwen 2.5 7B** | 7B | ~5GB | Best JSON extraction accuracy |
+| **Hermes 2 Pro 7B** | 7B | ~5GB | 91% function calling accuracy |
+| **Phi-4 Mini** | 3.8B | ~2.5GB | Faster inference, limited VRAM |
+| **Mistral 7B v0.3** | 7B | ~5GB | Fast, native tool support |
+
+See `docs/voice-bridge-plan.md` for detailed model selection guidance.
 
 ### 4. Service Adapters (Integrations)
 
@@ -605,7 +616,7 @@ volumes:
 | Trigger | iPhone Action Button | Physical activation |
 | Client | iOS Shortcut | Voice capture, API calls |
 | Router | Fastify/Bun API | Request handling, service routing |
-| Brain | Ollama + gpt-oss-20b | Intent classification |
+| Brain | Ollama + Qwen 2.5 7B | Intent classification |
 | Tasks | Plane.so | Task/project management |
 | Finance | Firefly III | Expense/income tracking |
 | Fitness | wger | Workout/weight logging |
